@@ -327,7 +327,7 @@ My goal is to build a tool that a teacher can actually use every day and eventua
 
 ## 👤 Developer
 
-Developهدل by **MaMaD_THUG**
+Developing by **MaMaD_THUG**
 
 
 
