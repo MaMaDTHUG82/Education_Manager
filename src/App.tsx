@@ -15,7 +15,7 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "classes":
-        return <Classes />;
+        return <Classes /> ;
 
       case "notes":
         return <Notes />;

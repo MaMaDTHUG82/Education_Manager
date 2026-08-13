@@ -13,7 +13,7 @@ const classes = [
   },
   {
     name: "Physics 9/1",
-    subject: "Physics",
+    subject: "Physics" ,
     students: 30,
     color: "green",
   },

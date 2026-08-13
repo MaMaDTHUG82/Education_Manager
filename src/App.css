@@ -940,7 +940,7 @@
   .stats-grid,
   .classes-grid,
   .notes-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr ;
   }
 
   .class-toolbar {
