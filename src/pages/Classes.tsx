@@ -1,44 +1,91 @@
 import { useState } from "react";
+import ClassDashboard from "./ClassDashboard";
 
-interface ClassItem {
+export interface Student {
+  id: number;
+  firstName: string;
+  lastName: string;
+  gender: "Male" | "Female";
+  birthDate: string;
+}
+
+export interface ClassItem {
   id: number;
   name: string;
   description: string;
   subject: string;
   location: string;
-  students: number;
+  students: Student[];
 }
 
 const initialClasses: ClassItem[] = [
   {
     id: 1,
     name: "Mathematics 7/1",
-    description: "Seventh grade mathematics class",
+    description:
+      "Seventh grade mathematics class",
     subject: "Mathematics",
     location: "Room 204",
-    students: 30,
+    students: [
+      {
+        id: 101,
+        firstName: "Ali",
+        lastName: "Rahimi",
+        gender: "Male",
+        birthDate: "2012-05-12",
+      },
+      {
+        id: 102,
+        firstName: "Sara",
+        lastName: "Mohammadi",
+        gender: "Female",
+        birthDate: "2012-08-20",
+      },
+      {
+        id: 103,
+        firstName: "Mohammad",
+        lastName: "Ahmadi",
+        gender: "Male",
+        birthDate: "2012-02-11",
+      },
+    ],
   },
+
   {
     id: 2,
     name: "Science 8/2",
-    description: "General science class",
+    description:
+      "General science class",
     subject: "Science",
     location: "Science Lab",
-    students: 28,
+    students: [
+      {
+        id: 104,
+        firstName: "Amir",
+        lastName: "Hosseini",
+        gender: "Male",
+        birthDate: "2011-06-10",
+      },
+    ],
   },
+
   {
     id: 3,
     name: "Physics 9/1",
-    description: "Introduction to physics",
+    description:
+      "Introduction to physics",
     subject: "Physics",
     location: "Room 301",
-    students: 30,
+    students: [],
   },
 ];
 
 export default function Classes() {
   const [classes, setClasses] =
     useState<ClassItem[]>(initialClasses);
+
+  const [selectedClassId, setSelectedClassId] =
+    useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] =
     useState(false);
@@ -53,15 +100,106 @@ export default function Classes() {
     location: "",
   });
 
-  const filteredClasses = classes.filter((item) => {
-    const query = search.toLowerCase();
+  const selectedClass = classes.find(
+    (item) => item.id === selectedClassId,
+  );
 
+  if (selectedClass) {
     return (
-      item.name.toLowerCase().includes(query) ||
-      item.subject.toLowerCase().includes(query) ||
-      item.location.toLowerCase().includes(query)
+      <ClassDashboard
+        classInfo={selectedClass}
+        allClasses={classes}
+        onBack={() =>
+          setSelectedClassId(null)
+        }
+        onUpdateClass={(updatedClass) => {
+          setClasses((previous) =>
+            previous.map((item) =>
+              item.id === updatedClass.id
+                ? updatedClass
+                : item,
+            ),
+          );
+        }}
+        onMoveStudent={(
+          studentId,
+          targetClassId,
+        ) => {
+          setClasses((previous) => {
+            let studentToMove:
+              | Student
+              | undefined;
+
+            const updatedClasses =
+              previous.map((item) => {
+                if (
+                  item.id === selectedClass.id
+                ) {
+                  studentToMove =
+                    item.students.find(
+                      (student) =>
+                        student.id ===
+                        studentId,
+                    );
+
+                  return {
+                    ...item,
+                    students:
+                      item.students.filter(
+                        (student) =>
+                          student.id !==
+                          studentId,
+                      ),
+                  };
+                }
+
+                return item;
+              });
+
+            if (!studentToMove) {
+              return previous;
+            }
+
+            return updatedClasses.map(
+              (item) => {
+                if (
+                  item.id === targetClassId
+                ) {
+                  return {
+                    ...item,
+                    students: [
+                      ...item.students,
+                      studentToMove!,
+                    ],
+                  };
+                }
+
+                return item;
+              },
+            );
+          });
+        }}
+      />
     );
-  });
+  }
+
+  const filteredClasses = classes.filter(
+    (item) => {
+      const query = search.toLowerCase();
+
+      return (
+        item.name
+          .toLowerCase()
+          .includes(query) ||
+        item.subject
+          .toLowerCase()
+          .includes(query) ||
+        item.location
+          .toLowerCase()
+          .includes(query)
+      );
+    },
+  );
 
   const updateForm = (
     field: keyof typeof form,
@@ -92,7 +230,7 @@ export default function Classes() {
       description: form.description.trim(),
       subject: form.subject.trim(),
       location: form.location.trim(),
-      students: 0,
+      students: [],
     };
 
     setClasses((previous) => [
@@ -125,7 +263,9 @@ export default function Classes() {
 
         <button
           className="primary-button"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() =>
+            setIsModalOpen(true)
+          }
         >
           + Create Class
         </button>
@@ -159,12 +299,9 @@ export default function Classes() {
             <button
               className="class-card"
               key={item.id}
-              onClick={() => {
-                console.log(
-                  "Open class:",
-                  item,
-                );
-              }}
+              onClick={() =>
+                setSelectedClassId(item.id)
+              }
             >
               <div className="class-card-top">
                 <div className="class-card-icon purple">
@@ -194,7 +331,9 @@ export default function Classes() {
                   </span>
 
                   <span>
-                    👥 {item.students} students
+                    👥{" "}
+                    {item.students.length}{" "}
+                    students
                   </span>
                 </div>
               </div>
@@ -210,12 +349,15 @@ export default function Classes() {
           <h3>No classes found</h3>
 
           <p>
-            Create a new class or try another search.
+            Create a new class or try another
+            search.
           </p>
 
           <button
             className="primary-button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() =>
+              setIsModalOpen(true)
+            }
           >
             + Create Class
           </button>
@@ -243,8 +385,8 @@ export default function Classes() {
                 <h3>Create Class</h3>
 
                 <p>
-                  Add the basic information for your
-                  class.
+                  Add the basic information for
+                  your class.
                 </p>
               </div>
 
