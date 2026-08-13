@@ -1,11 +1,35 @@
 import { useState } from "react";
 
+interface Grade {
+  id: number;
+  examName: string;
+  score: number;
+  maxScore: number;
+  examDate: string;
+}
+
+interface Encouragement {
+  id: number;
+  reason: string;
+  points: number;
+  date: string;
+}
+
 interface Student {
   id: number;
   firstName: string;
   lastName: string;
   gender: "Male" | "Female";
   birthDate: string;
+  notes?: string;
+  grades?: Grade[];
+  encouragements?: Encouragement[];
+  attendance?: {
+    present: number;
+    absent: number;
+    late: number;
+    total: number;
+  };
 }
 
 interface ClassInfo {
@@ -20,12 +44,14 @@ interface ClassInfo {
 interface ClassDashboardProps {
   classInfo: ClassInfo;
   allClasses: ClassInfo[];
+  
   onBack: () => void;
   onUpdateClass: (updatedClass: ClassInfo) => void;
   onMoveStudent: (
     studentId: number,
     targetClassId: number,
   ) => void;
+  onSelectStudent: (student: Student) => void;
 }
 
 export default function ClassDashboard({
@@ -34,6 +60,7 @@ export default function ClassDashboard({
   onBack,
   onUpdateClass,
   onMoveStudent,
+  onSelectStudent,
 }: ClassDashboardProps) {
   const [isAddStudentOpen, setIsAddStudentOpen] =
     useState(false);
@@ -88,6 +115,15 @@ export default function ClassDashboard({
       lastName: studentForm.lastName.trim(),
       gender: studentForm.gender,
       birthDate: studentForm.birthDate,
+      grades: [],
+      encouragements: [],
+      notes: "",
+      attendance: {
+        present: 0,
+        absent: 0,
+        late: 0,
+        total: 0,
+      },
     };
 
     onUpdateClass({
@@ -173,16 +209,23 @@ export default function ClassDashboard({
       <section className="class-info-grid">
         <div className="class-info-card">
           <span>Subject</span>
-          <strong>{classInfo.subject}</strong>
+
+          <strong>
+            {classInfo.subject}
+          </strong>
         </div>
 
         <div className="class-info-card">
           <span>Location</span>
-          <strong>📍 {classInfo.location}</strong>
+
+          <strong>
+            📍 {classInfo.location}
+          </strong>
         </div>
 
         <div className="class-info-card">
           <span>Students</span>
+
           <strong>
             {classInfo.students.length}
           </strong>
@@ -227,16 +270,46 @@ export default function ClassDashboard({
           {filteredStudents.length > 0 ? (
             filteredStudents.map(
               (student, index) => {
-                const age =
-                  new Date().getFullYear() -
-                  new Date(
-                    student.birthDate,
-                  ).getFullYear();
+                const birthDate = new Date(
+                  student.birthDate,
+                );
+
+                const today = new Date();
+
+                let age =
+                  today.getFullYear() -
+                  birthDate.getFullYear();
+
+                const monthDifference =
+                  today.getMonth() -
+                  birthDate.getMonth();
+
+                if (
+                  monthDifference < 0 ||
+                  (monthDifference === 0 &&
+                    today.getDate() <
+                      birthDate.getDate())
+                ) {
+                  age--;
+                }
 
                 return (
                   <div
                     className="student-row"
                     key={student.id}
+                    onClick={() =>
+                      onSelectStudent(student)
+                    }
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" ||
+                        event.key === " "
+                      ) {
+                        onSelectStudent(student);
+                      }
+                    }}
                   >
                     <span className="student-number">
                       {String(index + 1).padStart(
@@ -250,6 +323,7 @@ export default function ClassDashboard({
                         {student.firstName
                           .charAt(0)
                           .toUpperCase()}
+
                         {student.lastName
                           .charAt(0)
                           .toUpperCase()}
@@ -275,17 +349,24 @@ export default function ClassDashboard({
                       {age} years
                     </span>
 
-                    <div className="student-menu-wrapper">
+                    <div
+                      className="student-menu-wrapper"
+                      onClick={(event) =>
+                        event.stopPropagation()
+                      }
+                    >
                       <button
                         className="student-menu-button"
-                        onClick={() =>
+                        onClick={(event) => {
+                          event.stopPropagation();
+
                           setMenuStudentId(
                             menuStudentId ===
                               student.id
                               ? null
                               : student.id,
-                          )
-                        }
+                          );
+                        }}
                       >
                         •••
                       </button>
@@ -294,10 +375,13 @@ export default function ClassDashboard({
                         student.id && (
                         <div className="student-menu">
                           <button
-                            onClick={() => {
+                            onClick={(event) => {
+                              event.stopPropagation();
+
                               setMovingStudent(
                                 student,
                               );
+
                               setMenuStudentId(
                                 null,
                               );
@@ -308,11 +392,13 @@ export default function ClassDashboard({
 
                           <button
                             className="danger-menu-item"
-                            onClick={() =>
+                            onClick={(event) => {
+                              event.stopPropagation();
+
                               handleRemoveStudent(
                                 student.id,
-                              )
-                            }
+                              );
+                            }}
                           >
                             × Remove from class
                           </button>
@@ -380,9 +466,7 @@ export default function ClassDashboard({
             >
               <div className="form-row">
                 <div className="form-field">
-                  <label>
-                    First Name
-                  </label>
+                  <label>First Name</label>
 
                   <input
                     type="text"
@@ -404,9 +488,7 @@ export default function ClassDashboard({
                 </div>
 
                 <div className="form-field">
-                  <label>
-                    Last Name
-                  </label>
+                  <label>Last Name</label>
 
                   <input
                     type="text"
@@ -458,9 +540,7 @@ export default function ClassDashboard({
                 </div>
 
                 <div className="form-field">
-                  <label>
-                    Date of Birth
-                  </label>
+                  <label>Date of Birth</label>
 
                   <input
                     type="date"
@@ -594,6 +674,7 @@ function MoveStudentModal({
               {student.firstName
                 .charAt(0)
                 .toUpperCase()}
+
               {student.lastName
                 .charAt(0)
                 .toUpperCase()}

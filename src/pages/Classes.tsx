@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ClassDashboard from "./ClassDashboard";
+import StudentDashboard from "./StudentDashboard";
 
 export interface Student {
   id: number;
@@ -50,7 +51,6 @@ const initialClasses: ClassItem[] = [
       },
     ],
   },
-
   {
     id: 2,
     name: "Science 8/2",
@@ -68,7 +68,6 @@ const initialClasses: ClassItem[] = [
       },
     ],
   },
-
   {
     id: 3,
     name: "Physics 9/1",
@@ -85,6 +84,9 @@ export default function Classes() {
     useState<ClassItem[]>(initialClasses);
 
   const [selectedClassId, setSelectedClassId] =
+    useState<number | null>(null);
+
+  const [selectedStudentId, setSelectedStudentId] =
     useState<number | null>(null);
 
   const [isModalOpen, setIsModalOpen] =
@@ -104,6 +106,61 @@ export default function Classes() {
     (item) => item.id === selectedClassId,
   );
 
+  const selectedStudent =
+    selectedClass?.students.find(
+      (student) =>
+        student.id === selectedStudentId,
+    );
+
+  /*
+   * --------------------------------------------------
+   * STUDENT DASHBOARD
+   * --------------------------------------------------
+   *
+   * If a student is selected, show the student
+   * dashboard instead of the class dashboard.
+   */
+  if (selectedClass && selectedStudent) {
+    return (
+      <StudentDashboard
+        student={selectedStudent}
+        classInfo={selectedClass}
+        onBack={() =>
+          setSelectedStudentId(null)
+        }
+        onUpdateStudent={(updatedStudent) => {
+          setClasses((previous) =>
+            previous.map((classItem) => {
+              if (
+                classItem.id !==
+                selectedClass.id
+              ) {
+                return classItem;
+              }
+
+              return {
+                ...classItem,
+                students:
+                  classItem.students.map(
+                    (student) =>
+                      student.id ===
+                      updatedStudent.id
+                        ? updatedStudent
+                        : student,
+                  ),
+              };
+            }),
+          );
+        }}
+      />
+    );
+  }
+
+  /*
+   * --------------------------------------------------
+   * CLASS DASHBOARD
+   * --------------------------------------------------
+   */
   if (selectedClass) {
     return (
       <ClassDashboard
@@ -179,9 +236,18 @@ export default function Classes() {
             );
           });
         }}
+        onSelectStudent={(student) => {
+          setSelectedStudentId(student.id);
+        }}
       />
     );
   }
+
+  /*
+   * --------------------------------------------------
+   * CLASSES PAGE
+   * --------------------------------------------------
+   */
 
   const filteredClasses = classes.filter(
     (item) => {
