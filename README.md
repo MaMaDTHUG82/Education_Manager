@@ -1,4 +1,4 @@
-# Teacher_THUG
+# Not ready
 
 # 🎓 Teacher Manager
 
