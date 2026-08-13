@@ -14,6 +14,7 @@ interface Student {
     total: number;
   };
   grades?: Grade[];
+  assignments?: Assignment[];
   encouragements?: Encouragement[];
 }
 
@@ -23,6 +24,13 @@ interface Grade {
   score: number;
   maxScore: number;
   examDate: string;
+}
+
+interface Assignment {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: string;
 }
 
 interface Encouragement {
@@ -54,6 +62,9 @@ export default function StudentDashboard({
   const [isExamModalOpen, setIsExamModalOpen] =
     useState(false);
 
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] =
+    useState(false);
+
   const [isScoreModalOpen, setIsScoreModalOpen] =
     useState(false);
 
@@ -67,6 +78,13 @@ export default function StudentDashboard({
     examDate: "",
   });
 
+  const [assignmentForm, setAssignmentForm] =
+    useState({
+      title: "",
+      description: "",
+      dueDate: "",
+    });
+
   const [scoreForm, setScoreForm] = useState({
     reason: "",
     points: "",
@@ -74,6 +92,9 @@ export default function StudentDashboard({
   });
 
   const grades = student.grades ?? [];
+
+  const assignments =
+    student.assignments ?? [];
 
   const encouragements =
     student.encouragements ?? [];
@@ -180,6 +201,43 @@ export default function StudentDashboard({
     });
 
     setIsExamModalOpen(false);
+  };
+
+  const handleAddAssignment = (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (
+      !assignmentForm.title.trim() ||
+      !assignmentForm.dueDate
+    ) {
+      return;
+    }
+
+    const newAssignment: Assignment = {
+      id: Date.now(),
+      title: assignmentForm.title.trim(),
+      description:
+        assignmentForm.description.trim(),
+      dueDate: assignmentForm.dueDate,
+    };
+
+    onUpdateStudent({
+      ...student,
+      assignments: [
+        ...assignments,
+        newAssignment,
+      ],
+    });
+
+    setAssignmentForm({
+      title: "",
+      description: "",
+      dueDate: "",
+    });
+
+    setIsAssignmentModalOpen(false);
   };
 
   const handleAddScore = (
@@ -298,9 +356,23 @@ export default function StudentDashboard({
         </div>
 
         <div className="student-stat-card">
+          <span>Assignments</span>
+
+          <strong>
+            {assignments.length}
+          </strong>
+
+          <small>
+            assigned to this student
+          </small>
+        </div>
+
+        <div className="student-stat-card">
           <span>Encouragement Points</span>
 
-          <strong>+{totalPoints}</strong>
+          <strong>
+            +{totalPoints}
+          </strong>
 
           <small>
             {encouragements.length} records
@@ -349,8 +421,8 @@ export default function StudentDashboard({
           />
 
           <p className="notes-hint">
-            These notes will be kept as part of the
-            student's educational record.
+            These notes will be kept as part of
+            the student's educational record.
           </p>
         </section>
 
@@ -377,6 +449,7 @@ export default function StudentDashboard({
             <div className="attendance-details">
               <div>
                 <span>Present</span>
+
                 <strong>
                   {attendance.present}
                 </strong>
@@ -384,6 +457,7 @@ export default function StudentDashboard({
 
               <div>
                 <span>Absent</span>
+
                 <strong>
                   {attendance.absent}
                 </strong>
@@ -391,6 +465,7 @@ export default function StudentDashboard({
 
               <div>
                 <span>Late</span>
+
                 <strong>
                   {attendance.late}
                 </strong>
@@ -404,6 +479,10 @@ export default function StudentDashboard({
           </p>
         </section>
       </div>
+
+      {/* =====================================================
+          EXAMS & GRADES
+          ===================================================== */}
 
       <section className="student-section">
         <div className="student-section-header">
@@ -497,6 +576,91 @@ export default function StudentDashboard({
         )}
       </section>
 
+      {/* =====================================================
+          ASSIGNMENTS
+          This section is intentionally directly below
+          Exams & Grades.
+          ===================================================== */}
+
+      <section className="student-section">
+        <div className="student-section-header">
+          <div>
+            <p className="eyebrow">
+              COURSEWORK
+            </p>
+
+            <h3>Assignments</h3>
+
+            <span>
+              Manage assignments given to this
+              student.
+            </span>
+          </div>
+
+          <button
+            className="primary-button"
+            onClick={() =>
+              setIsAssignmentModalOpen(true)
+            }
+          >
+            + Add Assignment
+          </button>
+        </div>
+
+        {assignments.length > 0 ? (
+          <div className="assignment-list">
+            {assignments.map(
+              (assignment) => (
+                <div
+                  className="assignment-row"
+                  key={assignment.id}
+                >
+                  <div className="assignment-icon">
+                    ✓
+                  </div>
+
+                  <div className="assignment-info">
+                    <strong>
+                      {assignment.title}
+                    </strong>
+
+                    {assignment.description && (
+                      <span>
+                        {assignment.description}
+                      </span>
+                    )}
+
+                    <small>
+                      Due:{" "}
+                      {assignment.dueDate}
+                    </small>
+                  </div>
+
+                  <div className="assignment-status">
+                    Assigned
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        ) : (
+          <div className="student-empty-list">
+            <div>📚</div>
+
+            <h3>No assignments yet</h3>
+
+            <p>
+              Add the first assignment for this
+              student.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* =====================================================
+          ENCOURAGEMENT & POINTS
+          ===================================================== */}
+
       <section className="student-section">
         <div className="student-section-header">
           <div>
@@ -538,7 +702,9 @@ export default function StudentDashboard({
                     {item.reason}
                   </strong>
 
-                  <span>{item.date}</span>
+                  <span>
+                    {item.date}
+                  </span>
                 </div>
 
                 <strong className="encouragement-points">
@@ -560,6 +726,10 @@ export default function StudentDashboard({
           </div>
         )}
       </section>
+
+      {/* =====================================================
+          EXAM MODAL
+          ===================================================== */}
 
       {isExamModalOpen && (
         <div
@@ -645,7 +815,9 @@ export default function StudentDashboard({
                 </div>
 
                 <div className="form-field">
-                  <label>Maximum Score</label>
+                  <label>
+                    Maximum Score
+                  </label>
 
                   <input
                     type="number"
@@ -708,6 +880,151 @@ export default function StudentDashboard({
         </div>
       )}
 
+      {/* =====================================================
+          ASSIGNMENT MODAL
+          ===================================================== */}
+
+      {isAssignmentModalOpen && (
+        <div
+          className="modal-overlay"
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget
+            ) {
+              setIsAssignmentModalOpen(false);
+            }
+          }}
+        >
+          <div className="modal">
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">
+                  NEW ASSIGNMENT
+                </p>
+
+                <h3>Add Assignment</h3>
+
+                <p>
+                  Create a new assignment for{" "}
+                  {student.firstName}.
+                </p>
+              </div>
+
+              <button
+                className="modal-close"
+                onClick={() =>
+                  setIsAssignmentModalOpen(
+                    false,
+                  )
+                }
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              className="class-form"
+              onSubmit={handleAddAssignment}
+            >
+              <div className="form-field">
+                <label>
+                  Assignment Name
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="e.g. Chapter 4 Exercises"
+                  value={
+                    assignmentForm.title
+                  }
+                  onChange={(event) =>
+                    setAssignmentForm(
+                      (previous) => ({
+                        ...previous,
+                        title:
+                          event.target.value,
+                      }),
+                    )
+                  }
+                  required
+                />
+              </div>
+
+              <div className="form-field">
+                <label>
+                  Description
+                </label>
+
+                <textarea
+                  rows={4}
+                  placeholder="Describe the assignment..."
+                  value={
+                    assignmentForm.description
+                  }
+                  onChange={(event) =>
+                    setAssignmentForm(
+                      (previous) => ({
+                        ...previous,
+                        description:
+                          event.target.value,
+                      }),
+                    )
+                  }
+                />
+              </div>
+
+              <div className="form-field">
+                <label>
+                  Due Date
+                </label>
+
+                <input
+                  type="date"
+                  value={
+                    assignmentForm.dueDate
+                  }
+                  onChange={(event) =>
+                    setAssignmentForm(
+                      (previous) => ({
+                        ...previous,
+                        dueDate:
+                          event.target.value,
+                      }),
+                    )
+                  }
+                  required
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() =>
+                    setIsAssignmentModalOpen(
+                      false,
+                    )
+                  }
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="primary-button"
+                >
+                  Add Assignment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================
+          ENCOURAGEMENT MODAL
+          ===================================================== */}
+
       {isScoreModalOpen && (
         <div
           className="modal-overlay"
@@ -726,12 +1043,15 @@ export default function StudentDashboard({
                   POSITIVE FEEDBACK
                 </p>
 
-                <h3>Add Encouragement</h3>
+                <h3>
+                  Add Encouragement
+                </h3>
 
                 <p>
-                  Reward {student.firstName}{" "}
-                  {student.lastName} for a positive
-                  achievement.
+                  Reward{" "}
+                  {student.firstName}{" "}
+                  {student.lastName} for a
+                  positive achievement.
                 </p>
               </div>
 
