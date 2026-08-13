@@ -15,6 +15,11 @@ interface Encouragement {
   date: string;
 }
 
+interface AttendanceRecord {
+  date: string;
+  present: boolean;
+}
+
 interface Student {
   id: number;
   firstName: string;
@@ -30,6 +35,7 @@ interface Student {
     late: number;
     total: number;
   };
+  attendanceRecords?: AttendanceRecord[];
 }
 
 interface ClassInfo {
@@ -44,14 +50,17 @@ interface ClassInfo {
 interface ClassDashboardProps {
   classInfo: ClassInfo;
   allClasses: ClassInfo[];
-  
   onBack: () => void;
-  onUpdateClass: (updatedClass: ClassInfo) => void;
+  onUpdateClass: (
+    updatedClass: ClassInfo,
+  ) => void;
   onMoveStudent: (
     studentId: number,
     targetClassId: number,
   ) => void;
-  onSelectStudent: (student: Student) => void;
+  onSelectStudent: (
+    student: Student,
+  ) => void;
 }
 
 export default function ClassDashboard({
@@ -65,6 +74,9 @@ export default function ClassDashboard({
   const [isAddStudentOpen, setIsAddStudentOpen] =
     useState(false);
 
+  const [isAttendanceOpen, setIsAttendanceOpen] =
+    useState(false);
+
   const [menuStudentId, setMenuStudentId] =
     useState<number | null>(null);
 
@@ -74,27 +86,167 @@ export default function ClassDashboard({
   const [studentSearch, setStudentSearch] =
     useState("");
 
-  const [studentForm, setStudentForm] = useState({
-    firstName: "",
-    lastName: "",
-    gender: "Male" as "Male" | "Female",
-    birthDate: "",
-  });
+  const getLocalDate = () => {
+    const date = new Date();
 
-  const filteredStudents = classInfo.students.filter(
-    (student) => {
-      const query = studentSearch.toLowerCase();
+    const year = date.getFullYear();
+    const month = String(
+      date.getMonth() + 1,
+    ).padStart(2, "0");
+    const day = String(
+      date.getDate(),
+    ).padStart(2, "0");
 
-      return (
-        student.firstName
-          .toLowerCase()
-          .includes(query) ||
-        student.lastName
-          .toLowerCase()
-          .includes(query)
+    return `${year}-${month}-${day}`;
+  };
+
+  const [attendanceDate, setAttendanceDate] =
+    useState(getLocalDate());
+
+  const [attendanceStatus, setAttendanceStatus] =
+    useState<Record<number, boolean>>({});
+
+  const [studentForm, setStudentForm] =
+    useState({
+      firstName: "",
+      lastName: "",
+      gender:
+        "Male" as "Male" | "Female",
+      birthDate: "",
+    });
+
+  const filteredStudents =
+    classInfo.students.filter(
+      (student) => {
+        const query =
+          studentSearch.toLowerCase();
+
+        return (
+          student.firstName
+            .toLowerCase()
+            .includes(query) ||
+          student.lastName
+            .toLowerCase()
+            .includes(query)
+        );
+      },
+    );
+
+  const loadAttendanceForDate = (
+    date: string,
+  ) => {
+    const status: Record<
+      number,
+      boolean
+    > = {};
+
+    classInfo.students.forEach(
+      (student) => {
+        const record =
+          student.attendanceRecords?.find(
+            (item) =>
+              item.date === date,
+          );
+
+        status[student.id] =
+          record?.present ?? false;
+      },
+    );
+
+    setAttendanceStatus(status);
+  };
+
+  const handleOpenAttendance = () => {
+    const today = getLocalDate();
+
+    setAttendanceDate(today);
+    loadAttendanceForDate(today);
+
+    setIsAttendanceOpen(true);
+  };
+
+  const handleAttendanceDateChange = (
+    date: string,
+  ) => {
+    setAttendanceDate(date);
+    loadAttendanceForDate(date);
+  };
+
+  const toggleAttendance = (
+    studentId: number,
+  ) => {
+    setAttendanceStatus(
+      (previous) => ({
+        ...previous,
+        [studentId]:
+          !previous[studentId],
+      }),
+    );
+  };
+
+  const handleSaveAttendance = () => {
+    const updatedStudents =
+      classInfo.students.map(
+        (student) => {
+          const existingRecords =
+            student.attendanceRecords ??
+            [];
+
+          const recordsWithoutDate =
+            existingRecords.filter(
+              (record) =>
+                record.date !==
+                attendanceDate,
+            );
+
+          const present =
+            attendanceStatus[
+              student.id
+            ] ?? false;
+
+          const updatedRecords = [
+            ...recordsWithoutDate,
+            {
+              date: attendanceDate,
+              present,
+            },
+          ];
+
+          const total =
+            updatedRecords.length;
+
+          const presentCount =
+            updatedRecords.filter(
+              (record) =>
+                record.present,
+            ).length;
+
+          const absentCount =
+            total - presentCount;
+
+          return {
+            ...student,
+            attendanceRecords:
+              updatedRecords,
+            attendance: {
+              present: presentCount,
+              absent: absentCount,
+              late:
+                student.attendance
+                  ?.late ?? 0,
+              total,
+            },
+          };
+        },
       );
-    },
-  );
+
+    onUpdateClass({
+      ...classInfo,
+      students: updatedStudents,
+    });
+
+    setIsAttendanceOpen(false);
+  };
 
   const handleAddStudent = (
     event: React.FormEvent<HTMLFormElement>,
@@ -111,10 +263,13 @@ export default function ClassDashboard({
 
     const newStudent: Student = {
       id: Date.now(),
-      firstName: studentForm.firstName.trim(),
-      lastName: studentForm.lastName.trim(),
+      firstName:
+        studentForm.firstName.trim(),
+      lastName:
+        studentForm.lastName.trim(),
       gender: studentForm.gender,
-      birthDate: studentForm.birthDate,
+      birthDate:
+        studentForm.birthDate,
       grades: [],
       encouragements: [],
       notes: "",
@@ -124,6 +279,7 @@ export default function ClassDashboard({
         late: 0,
         total: 0,
       },
+      attendanceRecords: [],
     };
 
     onUpdateClass({
@@ -147,17 +303,20 @@ export default function ClassDashboard({
   const handleRemoveStudent = (
     studentId: number,
   ) => {
-    const student = classInfo.students.find(
-      (item) => item.id === studentId,
-    );
+    const student =
+      classInfo.students.find(
+        (item) =>
+          item.id === studentId,
+      );
 
     if (!student) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Remove ${student.firstName} ${student.lastName} from this class?`,
-    );
+    const confirmed =
+      window.confirm(
+        `Remove ${student.firstName} ${student.lastName} from this class?`,
+      );
 
     if (!confirmed) {
       return;
@@ -165,13 +324,27 @@ export default function ClassDashboard({
 
     onUpdateClass({
       ...classInfo,
-      students: classInfo.students.filter(
-        (item) => item.id !== studentId,
-      ),
+      students:
+        classInfo.students.filter(
+          (item) =>
+            item.id !== studentId,
+        ),
     });
 
     setMenuStudentId(null);
   };
+
+  const presentCount =
+    classInfo.students.filter(
+      (student) =>
+        attendanceStatus[
+          student.id
+        ],
+    ).length;
+
+  const absentCount =
+    classInfo.students.length -
+    presentCount;
 
   return (
     <div className="page">
@@ -186,7 +359,9 @@ export default function ClassDashboard({
 
       <header className="class-dashboard-header">
         <div>
-          <p className="eyebrow">CLASS</p>
+          <p className="eyebrow">
+            CLASS
+          </p>
 
           <h2>{classInfo.name}</h2>
 
@@ -196,14 +371,27 @@ export default function ClassDashboard({
           </p>
         </div>
 
-        <button
-          className="primary-button"
-          onClick={() =>
-            setIsAddStudentOpen(true)
-          }
-        >
-          + Add Student
-        </button>
+        <div className="class-dashboard-actions">
+          <button
+            className="secondary-button"
+            onClick={
+              handleOpenAttendance
+            }
+          >
+            ✓ Attendance
+          </button>
+
+          <button
+            className="primary-button"
+            onClick={() =>
+              setIsAddStudentOpen(
+                true,
+              )
+            }
+          >
+            + Add Student
+          </button>
+        </div>
       </header>
 
       <section className="class-info-grid">
@@ -238,7 +426,8 @@ export default function ClassDashboard({
             <h3>Students</h3>
 
             <span>
-              {classInfo.students.length} enrolled
+              {classInfo.students.length}{" "}
+              enrolled
             </span>
           </div>
 
@@ -248,7 +437,9 @@ export default function ClassDashboard({
             <input
               type="text"
               placeholder="Search students..."
-              value={studentSearch}
+              value={
+                studentSearch
+              }
               onChange={(event) =>
                 setStudentSearch(
                   event.target.value,
@@ -267,14 +458,20 @@ export default function ClassDashboard({
             <span></span>
           </div>
 
-          {filteredStudents.length > 0 ? (
+          {filteredStudents.length >
+          0 ? (
             filteredStudents.map(
-              (student, index) => {
-                const birthDate = new Date(
-                  student.birthDate,
-                );
+              (
+                student,
+                index,
+              ) => {
+                const birthDate =
+                  new Date(
+                    student.birthDate,
+                  );
 
-                const today = new Date();
+                const today =
+                  new Date();
 
                 let age =
                   today.getFullYear() -
@@ -285,8 +482,10 @@ export default function ClassDashboard({
                   birthDate.getMonth();
 
                 if (
-                  monthDifference < 0 ||
-                  (monthDifference === 0 &&
+                  monthDifference <
+                    0 ||
+                  (monthDifference ===
+                    0 &&
                     today.getDate() <
                       birthDate.getDate())
                 ) {
@@ -296,23 +495,35 @@ export default function ClassDashboard({
                 return (
                   <div
                     className="student-row"
-                    key={student.id}
+                    key={
+                      student.id
+                    }
                     onClick={() =>
-                      onSelectStudent(student)
+                      onSelectStudent(
+                        student,
+                      )
                     }
                     role="button"
                     tabIndex={0}
-                    onKeyDown={(event) => {
+                    onKeyDown={(
+                      event,
+                    ) => {
                       if (
-                        event.key === "Enter" ||
-                        event.key === " "
+                        event.key ===
+                          "Enter" ||
+                        event.key ===
+                          " "
                       ) {
-                        onSelectStudent(student);
+                        onSelectStudent(
+                          student,
+                        );
                       }
                     }}
                   >
                     <span className="student-number">
-                      {String(index + 1).padStart(
+                      {String(
+                        index + 1,
+                      ).padStart(
                         2,
                         "0",
                       )}
@@ -321,28 +532,40 @@ export default function ClassDashboard({
                     <div className="student-name">
                       <div className="student-avatar">
                         {student.firstName
-                          .charAt(0)
+                          .charAt(
+                            0,
+                          )
                           .toUpperCase()}
 
                         {student.lastName
-                          .charAt(0)
+                          .charAt(
+                            0,
+                          )
                           .toUpperCase()}
                       </div>
 
                       <div>
                         <strong>
-                          {student.firstName}{" "}
-                          {student.lastName}
+                          {
+                            student.firstName
+                          }{" "}
+                          {
+                            student.lastName
+                          }
                         </strong>
 
                         <span>
-                          {student.gender}
+                          {
+                            student.gender
+                          }
                         </span>
                       </div>
                     </div>
 
                     <span className="student-gender">
-                      {student.gender}
+                      {
+                        student.gender
+                      }
                     </span>
 
                     <span className="student-age">
@@ -351,13 +574,17 @@ export default function ClassDashboard({
 
                     <div
                       className="student-menu-wrapper"
-                      onClick={(event) =>
+                      onClick={(
+                        event,
+                      ) =>
                         event.stopPropagation()
                       }
                     >
                       <button
                         className="student-menu-button"
-                        onClick={(event) => {
+                        onClick={(
+                          event,
+                        ) => {
                           event.stopPropagation();
 
                           setMenuStudentId(
@@ -375,7 +602,9 @@ export default function ClassDashboard({
                         student.id && (
                         <div className="student-menu">
                           <button
-                            onClick={(event) => {
+                            onClick={(
+                              event,
+                            ) => {
                               event.stopPropagation();
 
                               setMovingStudent(
@@ -387,12 +616,15 @@ export default function ClassDashboard({
                               );
                             }}
                           >
-                            ⇄ Move to another class
+                            ⇄ Move to
+                            another class
                           </button>
 
                           <button
                             className="danger-menu-item"
-                            onClick={(event) => {
+                            onClick={(
+                              event,
+                            ) => {
                               event.stopPropagation();
 
                               handleRemoveStudent(
@@ -400,7 +632,8 @@ export default function ClassDashboard({
                               );
                             }}
                           >
-                            × Remove from class
+                            × Remove
+                            from class
                           </button>
                         </div>
                       )}
@@ -413,25 +646,359 @@ export default function ClassDashboard({
             <div className="students-empty">
               <div>👨‍🎓</div>
 
-              <h3>No students found</h3>
+              <h3>
+                No students found
+              </h3>
 
               <p>
-                Add a student to this class or
-                change your search.
+                Add a student to
+                this class or
+                change your
+                search.
               </p>
             </div>
           )}
         </div>
       </section>
 
+      {/* ==========================================
+          ATTENDANCE MODAL
+          ========================================== */}
+
+      {isAttendanceOpen && (
+        <div
+          className="modal-overlay"
+          onMouseDown={(
+            event,
+          ) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              setIsAttendanceOpen(
+                false,
+              );
+            }
+          }}
+        >
+          <div className="modal attendance-modal">
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">
+                  DAILY RECORD
+                </p>
+
+                <h3>
+                  Attendance
+                </h3>
+
+                <p>
+                  Mark the students
+                  who are present.
+                </p>
+              </div>
+
+              <button
+                className="modal-close"
+                type="button"
+                onClick={() =>
+                  setIsAttendanceOpen(
+                    false,
+                  )
+                }
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="attendance-content">
+              <div className="form-field">
+                <label htmlFor="attendance-date">
+                  Date
+                </label>
+
+                <input
+                  id="attendance-date"
+                  type="date"
+                  value={
+                    attendanceDate
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    handleAttendanceDateChange(
+                      event.target
+                        .value,
+                    )
+                  }
+                />
+              </div>
+
+              {classInfo.students.length >
+              0 ? (
+                <>
+                  <div className="attendance-list">
+                    {classInfo.students.map(
+                      (
+                        student,
+                        index,
+                      ) => {
+                        const isPresent =
+                          attendanceStatus[
+                            student.id
+                          ] ??
+                          false;
+
+                        return (
+                          <button
+                            type="button"
+                            className={`attendance-student-row ${
+                              isPresent
+                                ? "present"
+                                : ""
+                            }`}
+                            key={
+                              student.id
+                            }
+                            onClick={() =>
+                              toggleAttendance(
+                                student.id,
+                              )
+                            }
+                          >
+                            <span className="attendance-number">
+                              {String(
+                                index +
+                                  1,
+                              ).padStart(
+                                2,
+                                "0",
+                              )}
+                            </span>
+
+                            <div className="attendance-student-info">
+                              <div className="student-avatar">
+                                {student.firstName
+                                  .charAt(
+                                    0,
+                                  )
+                                  .toUpperCase()}
+
+                                {student.lastName
+                                  .charAt(
+                                    0,
+                                  )
+                                  .toUpperCase()}
+                              </div>
+
+                              <div>
+                                <strong>
+                                  {
+                                    student.firstName
+                                  }{" "}
+                                  {
+                                    student.lastName
+                                  }
+                                </strong>
+
+                                <span>
+                                  {
+                                    student.gender
+                                  }
+                                </span>
+                              </div>
+                            </div>
+
+                            <span
+                              className={`attendance-status ${
+                                isPresent
+                                  ? "present"
+                                  : "absent"
+                              }`}
+                            >
+                              {isPresent
+                                ? "Present"
+                                : "Absent"}
+                            </span>
+
+                            <span
+                              className={`attendance-checkbox ${
+                                isPresent
+                                  ? "checked"
+                                  : ""
+                              }`}
+                            >
+                              {isPresent
+                                ? "✓"
+                                : ""}
+                            </span>
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
+
+                  <div className="attendance-summary">
+                    <div className="attendance-summary-stats">
+                      <div>
+                        <span>
+                          Total
+                          Students
+                        </span>
+
+                        <strong>
+                          {
+                            classInfo
+                              .students
+                              .length
+                          }
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Present
+                        </span>
+
+                        <strong className="present-text">
+                          {
+                            presentCount
+                          }
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>
+                          Absent
+                        </span>
+
+                        <strong className="absent-text">
+                          {
+                            absentCount
+                          }
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="absent-students">
+                      <span>
+                        Absent
+                        Students
+                      </span>
+
+                      {classInfo.students.some(
+                        (
+                          student,
+                        ) =>
+                          !attendanceStatus[
+                            student.id
+                          ],
+                      ) ? (
+                        <div>
+                          {classInfo.students
+                            .filter(
+                              (
+                                student,
+                              ) =>
+                                !attendanceStatus[
+                                  student.id
+                                ],
+                            )
+                            .map(
+                              (
+                                student,
+                              ) => (
+                                <span
+                                  className="absent-student-tag"
+                                  key={
+                                    student.id
+                                  }
+                                >
+                                  {
+                                    student.firstName
+                                  }{" "}
+                                  {
+                                    student.lastName
+                                  }
+                                </span>
+                              ),
+                            )}
+                        </div>
+                      ) : (
+                        <p className="all-present-message">
+                          Everyone is
+                          present.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="attendance-empty">
+                  <div>👨‍🎓</div>
+
+                  <h3>
+                    No students
+                  </h3>
+
+                  <p>
+                    Add students to
+                    this class before
+                    taking
+                    attendance.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-actions attendance-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() =>
+                  setIsAttendanceOpen(
+                    false,
+                  )
+                }
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="primary-button"
+                disabled={
+                  classInfo.students
+                    .length === 0
+                }
+                onClick={
+                  handleSaveAttendance
+                }
+              >
+                Save Attendance
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          ADD STUDENT MODAL
+          ========================================== */}
+
       {isAddStudentOpen && (
         <div
           className="modal-overlay"
-          onMouseDown={(event) => {
+          onMouseDown={(
+            event,
+          ) => {
             if (
-              event.target === event.currentTarget
+              event.target ===
+              event.currentTarget
             ) {
-              setIsAddStudentOpen(false);
+              setIsAddStudentOpen(
+                false,
+              );
             }
           }}
         >
@@ -442,18 +1009,26 @@ export default function ClassDashboard({
                   NEW STUDENT
                 </p>
 
-                <h3>Add Student</h3>
+                <h3>
+                  Add Student
+                </h3>
 
                 <p>
-                  Add a new student to{" "}
-                  {classInfo.name}.
+                  Add a new student
+                  to{" "}
+                  {
+                    classInfo.name
+                  }
+                  .
                 </p>
               </div>
 
               <button
                 className="modal-close"
                 onClick={() =>
-                  setIsAddStudentOpen(false)
+                  setIsAddStudentOpen(
+                    false,
+                  )
                 }
               >
                 ×
@@ -462,11 +1037,15 @@ export default function ClassDashboard({
 
             <form
               className="class-form"
-              onSubmit={handleAddStudent}
+              onSubmit={
+                handleAddStudent
+              }
             >
               <div className="form-row">
                 <div className="form-field">
-                  <label>First Name</label>
+                  <label>
+                    First Name
+                  </label>
 
                   <input
                     type="text"
@@ -474,12 +1053,17 @@ export default function ClassDashboard({
                     value={
                       studentForm.firstName
                     }
-                    onChange={(event) =>
+                    onChange={(
+                      event,
+                    ) =>
                       setStudentForm(
-                        (previous) => ({
+                        (
+                          previous,
+                        ) => ({
                           ...previous,
                           firstName:
-                            event.target.value,
+                            event.target
+                              .value,
                         }),
                       )
                     }
@@ -488,7 +1072,9 @@ export default function ClassDashboard({
                 </div>
 
                 <div className="form-field">
-                  <label>Last Name</label>
+                  <label>
+                    Last Name
+                  </label>
 
                   <input
                     type="text"
@@ -496,12 +1082,17 @@ export default function ClassDashboard({
                     value={
                       studentForm.lastName
                     }
-                    onChange={(event) =>
+                    onChange={(
+                      event,
+                    ) =>
                       setStudentForm(
-                        (previous) => ({
+                        (
+                          previous,
+                        ) => ({
                           ...previous,
                           lastName:
-                            event.target.value,
+                            event.target
+                              .value,
                         }),
                       )
                     }
@@ -512,13 +1103,21 @@ export default function ClassDashboard({
 
               <div className="form-row">
                 <div className="form-field">
-                  <label>Gender</label>
+                  <label>
+                    Gender
+                  </label>
 
                   <select
-                    value={studentForm.gender}
-                    onChange={(event) =>
+                    value={
+                      studentForm.gender
+                    }
+                    onChange={(
+                      event,
+                    ) =>
                       setStudentForm(
-                        (previous) => ({
+                        (
+                          previous,
+                        ) => ({
                           ...previous,
                           gender:
                             event.target
@@ -540,19 +1139,26 @@ export default function ClassDashboard({
                 </div>
 
                 <div className="form-field">
-                  <label>Date of Birth</label>
+                  <label>
+                    Date of Birth
+                  </label>
 
                   <input
                     type="date"
                     value={
                       studentForm.birthDate
                     }
-                    onChange={(event) =>
+                    onChange={(
+                      event,
+                    ) =>
                       setStudentForm(
-                        (previous) => ({
+                        (
+                          previous,
+                        ) => ({
                           ...previous,
                           birthDate:
-                            event.target.value,
+                            event.target
+                              .value,
                         }),
                       )
                     }
@@ -566,7 +1172,9 @@ export default function ClassDashboard({
                   type="button"
                   className="secondary-button"
                   onClick={() =>
-                    setIsAddStudentOpen(false)
+                    setIsAddStudentOpen(
+                      false,
+                    )
                   }
                 >
                   Cancel
@@ -584,21 +1192,35 @@ export default function ClassDashboard({
         </div>
       )}
 
+      {/* ==========================================
+          MOVE STUDENT MODAL
+          ========================================== */}
+
       {movingStudent && (
         <MoveStudentModal
-          student={movingStudent}
-          currentClassId={classInfo.id}
+          student={
+            movingStudent
+          }
+          currentClassId={
+            classInfo.id
+          }
           classes={allClasses}
           onClose={() =>
-            setMovingStudent(null)
+            setMovingStudent(
+              null,
+            )
           }
-          onMove={(targetClassId) => {
+          onMove={(
+            targetClassId,
+          ) => {
             onMoveStudent(
               movingStudent.id,
               targetClassId,
             );
 
-            setMovingStudent(null);
+            setMovingStudent(
+              null,
+            );
           }}
         />
       )}
@@ -611,7 +1233,9 @@ interface MoveStudentModalProps {
   currentClassId: number;
   classes: ClassInfo[];
   onClose: () => void;
-  onMove: (targetClassId: number) => void;
+  onMove: (
+    targetClassId: number,
+  ) => void;
 }
 
 function MoveStudentModal({
@@ -621,21 +1245,28 @@ function MoveStudentModal({
   onClose,
   onMove,
 }: MoveStudentModalProps) {
-  const availableClasses = classes.filter(
-    (item) => item.id !== currentClassId,
-  );
+  const availableClasses =
+    classes.filter(
+      (item) =>
+        item.id !==
+        currentClassId,
+    );
 
   const [targetClassId, setTargetClassId] =
     useState(
-      availableClasses[0]?.id ?? 0,
+      availableClasses[0]?.id ??
+        0,
     );
 
   return (
     <div
       className="modal-overlay"
-      onMouseDown={(event) => {
+      onMouseDown={(
+        event,
+      ) => {
         if (
-          event.target === event.currentTarget
+          event.target ===
+          event.currentTarget
         ) {
           onClose();
         }
@@ -648,7 +1279,9 @@ function MoveStudentModal({
               TRANSFER STUDENT
             </p>
 
-            <h3>Move Student</h3>
+            <h3>
+              Move Student
+            </h3>
 
             <p>
               Move{" "}
@@ -656,7 +1289,8 @@ function MoveStudentModal({
                 {student.firstName}{" "}
                 {student.lastName}
               </strong>{" "}
-              to another class.
+              to another
+              class.
             </p>
           </div>
 
@@ -687,35 +1321,54 @@ function MoveStudentModal({
               </strong>
 
               <span>
-                Currently in the current class
+                Currently in the
+                current class
               </span>
             </div>
           </div>
 
           <div className="form-field">
-            <label>Move to</label>
+            <label>
+              Move to
+            </label>
 
             <select
-              value={targetClassId}
-              onChange={(event) =>
+              value={
+                targetClassId
+              }
+              onChange={(
+                event,
+              ) =>
                 setTargetClassId(
-                  Number(event.target.value),
+                  Number(
+                    event.target
+                      .value,
+                  ),
                 )
               }
             >
-              {availableClasses.length === 0 ? (
+              {availableClasses.length ===
+              0 ? (
                 <option value={0}>
-                  No other classes available
+                  No other
+                  classes
+                  available
                 </option>
               ) : (
-                availableClasses.map((item) => (
-                  <option
-                    key={item.id}
-                    value={item.id}
-                  >
-                    {item.name}
-                  </option>
-                ))
+                availableClasses.map(
+                  (item) => (
+                    <option
+                      key={
+                        item.id
+                      }
+                      value={
+                        item.id
+                      }
+                    >
+                      {item.name}
+                    </option>
+                  ),
+                )
               )}
             </select>
           </div>
@@ -732,11 +1385,16 @@ function MoveStudentModal({
           <button
             className="primary-button"
             disabled={
-              availableClasses.length === 0
+              availableClasses.length ===
+              0
             }
             onClick={() => {
-              if (targetClassId) {
-                onMove(targetClassId);
+              if (
+                targetClassId
+              ) {
+                onMove(
+                  targetClassId,
+                );
               }
             }}
           >

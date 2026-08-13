@@ -2348,3 +2348,304 @@
   font-size: 11px;
   font-weight: 600;
 }
+
+/* =========================================================
+   Class Dashboard - Attendance
+   ========================================================= */
+
+.class-dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.attendance-modal {
+  max-width: 650px;
+}
+
+.attendance-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 24px;
+}
+
+.attendance-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 390px;
+  overflow-y: auto;
+
+  border: 1px solid #24242b;
+  border-radius: 10px;
+
+  background: #0d0d12;
+}
+
+.attendance-student-row {
+  width: 100%;
+  min-height: 62px;
+
+  display: grid;
+  grid-template-columns:
+    35px
+    minmax(0, 1fr)
+    80px
+    34px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 14px;
+
+  border: 0;
+  border-bottom: 1px solid #1f1f25;
+
+  background: transparent;
+  color: #e4e4e7;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease;
+}
+
+.attendance-student-row:last-child {
+  border-bottom: 0;
+}
+
+.attendance-student-row:hover {
+  background: #15151b;
+}
+
+.attendance-student-row.present {
+  background: rgba(
+    139,
+    92,
+    246,
+    0.045
+  );
+}
+
+.attendance-number {
+  color: #52525b;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.attendance-student-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-width: 0;
+}
+
+.attendance-student-info > div:last-child {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+}
+
+.attendance-student-info strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.attendance-student-info span {
+  margin-top: 3px;
+
+  color: #62626b;
+  font-size: 9px;
+}
+
+.attendance-status {
+  font-size: 9px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.attendance-status.present {
+  color: #4ade80;
+}
+
+.attendance-status.absent {
+  color: #f87171;
+}
+
+.attendance-checkbox {
+  width: 23px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #363640;
+  border-radius: 7px;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.attendance-checkbox.checked {
+  border-color: #8b5cf6;
+  background: #8b5cf6;
+}
+
+.attendance-summary {
+  padding: 15px;
+
+  border: 1px solid #292930;
+  border-radius: 10px;
+
+  background: #111116;
+}
+
+.attendance-summary-stats {
+  display: grid;
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+}
+
+.attendance-summary-stats > div {
+  padding: 11px;
+
+  border: 1px solid #24242b;
+  border-radius: 8px;
+
+  background: #0d0d12;
+}
+
+.attendance-summary-stats span {
+  display: block;
+
+  color: #62626b;
+  font-size: 9px;
+}
+
+.attendance-summary-stats strong {
+  display: block;
+
+  margin-top: 5px;
+
+  font-size: 17px;
+}
+
+.present-text {
+  color: #4ade80;
+}
+
+.absent-text {
+  color: #f87171;
+}
+
+.absent-students {
+  margin-top: 14px;
+}
+
+.absent-students > span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #71717a;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.absent-students > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.absent-student-tag {
+  padding: 5px 8px;
+
+  border-radius: 6px;
+
+  background: #29191b;
+  color: #f87171;
+
+  font-size: 9px;
+}
+
+.all-present-message {
+  margin: 0;
+
+  color: #4ade80;
+  font-size: 9px;
+}
+
+.attendance-actions {
+  padding: 0 24px 22px;
+}
+
+.attendance-empty {
+  min-height: 180px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.attendance-empty > div {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+.attendance-empty h3 {
+  margin: 10px 0 5px;
+
+  font-size: 13px;
+}
+
+.attendance-empty p {
+  margin: 0;
+
+  color: #62626b;
+  font-size: 10px;
+}
+
+@media (max-width: 600px) {
+  .class-dashboard-actions {
+    width: 100%;
+  }
+
+  .class-dashboard-actions button {
+    flex: 1;
+  }
+
+  .attendance-modal {
+    max-width: none;
+  }
+
+  .attendance-student-row {
+    grid-template-columns:
+      25px
+      minmax(0, 1fr)
+      65px
+      30px;
+
+    padding: 0 10px;
+  }
+
+  .attendance-summary-stats {
+    grid-template-columns: 1fr;
+  }
+}
