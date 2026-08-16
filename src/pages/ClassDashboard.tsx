@@ -1398,7 +1398,7 @@ function MoveStudentModal({
               }
             }}
           >
-            Move Student
+             Move Student
           </button>
         </div>
       </div>
