@@ -1,5 +1,12 @@
 import { useMemo, useState } from "react";
 
+interface ClassActivity {
+  id: number;
+  description: string;
+  score: number;
+  date: string;
+}
+
 interface Student {
   id: number;
   firstName: string;
@@ -14,6 +21,7 @@ interface Student {
     total: number;
   };
   grades?: Grade[];
+  classActivities?: ClassActivity[];
   assignments?: Assignment[];
   encouragements?: Encouragement[];
   attendanceRecords?: AttendanceRecord[];
@@ -68,6 +76,9 @@ export default function StudentDashboard({
   const [isExamModalOpen, setIsExamModalOpen] =
     useState(false);
 
+  const [isActivityModalOpen, setIsActivityModalOpen] =
+    useState(false);  
+
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] =
     useState(false);
 
@@ -82,6 +93,12 @@ export default function StudentDashboard({
     score: "",
     maxScore: "20",
     examDate: "",
+  });
+  const [activityForm, setActivityForm] =
+    useState({
+    description: "",
+    score: "",
+    date: "",
   });
 
   const [assignmentForm, setAssignmentForm] =
@@ -98,6 +115,9 @@ export default function StudentDashboard({
   });
 
   const grades = student.grades ?? [];
+
+  const classActivities =
+    student.classActivities ?? [];
 
   const assignments =
     student.assignments ?? [];
@@ -154,6 +174,15 @@ export default function StudentDashboard({
           0,
         ) / grades.length
       : 0;
+  
+  const averageClassActivity =
+      classActivities.length > 0
+    ? classActivities.reduce(
+        (sum, activity) =>
+          sum + activity.score,
+        0,
+      ) / classActivities.length
+    : 0;    
 
   const totalPoints = encouragements.reduce(
     (sum, item) => sum + item.points,
@@ -218,6 +247,50 @@ export default function StudentDashboard({
 
     setIsExamModalOpen(false);
   };
+
+  const handleAddClassActivity = (
+  event: React.FormEvent<HTMLFormElement>,
+) => {
+  event.preventDefault();
+
+  const score = Number(
+    activityForm.score,
+  );
+
+  if (
+    !activityForm.description.trim() ||
+    !activityForm.date ||
+    Number.isNaN(score) ||
+    score < 1 ||
+    score > 20
+  ) {
+    return;
+  }
+
+  const newActivity: ClassActivity = {
+    id: Date.now(),
+    description:
+      activityForm.description.trim(),
+    score,
+    date: activityForm.date,
+  };
+
+  onUpdateStudent({
+    ...student,
+    classActivities: [
+      ...classActivities,
+      newActivity,
+    ],
+  });
+
+  setActivityForm({
+    description: "",
+    score: "",
+    date: "",
+  });
+
+  setIsActivityModalOpen(false);
+};
 
   const handleAddAssignment = (
     event: React.FormEvent<HTMLFormElement>,
@@ -370,6 +443,20 @@ export default function StudentDashboard({
             {grades.length} exams recorded
           </small>
         </div>
+
+        <div className="student-stat-card">
+            <span>Class Activity</span>
+
+            <strong>
+              {classActivities.length > 0
+                ? averageClassActivity.toFixed(1)
+                : "—"}
+            </strong>
+
+            <small>
+              {classActivities.length} activities recorded
+            </small>
+          </div>
 
         <div className="student-stat-card">
           <span>Assignments</span>
@@ -591,6 +678,99 @@ export default function StudentDashboard({
           </div>
         )}
       </section>
+
+        {/* =====================================================
+    CLASS ACTIVITIES
+    ===================================================== */}
+
+<section className="student-section">
+  <div className="student-section-header">
+    <div>
+      <p className="eyebrow">
+        CLASSROOM PERFORMANCE
+      </p>
+
+      <h3>Class Activities</h3>
+
+      <span>
+        Record classroom participation,
+        performance, and daily activities.
+      </span>
+    </div>
+
+    <button
+      className="primary-button"
+      onClick={() =>
+        setIsActivityModalOpen(true)
+      }
+    >
+      + Add Activity
+    </button>
+  </div>
+
+  {classActivities.length > 0 ? (
+    <div className="class-activity-list">
+      {classActivities.map(
+        (activity) => (
+          <div
+            className="class-activity-row"
+            key={activity.id}
+          >
+            <div className="class-activity-icon">
+              ✦
+            </div>
+
+            <div className="class-activity-info">
+              <strong>
+                {activity.description}
+              </strong>
+
+              <span>
+                {activity.date}
+              </span>
+            </div>
+
+            <div className="class-activity-progress">
+              <div>
+                <div
+                  className="class-activity-progress-bar"
+                  style={{
+                    width: `${
+                      (activity.score /
+                        20) *
+                      100
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="class-activity-value">
+              <strong>
+                {activity.score}
+              </strong>
+
+              <span>/ 20</span>
+            </div>
+          </div>
+        ),
+      )}
+    </div>
+  ) : (
+    <div className="student-empty-list">
+      <div>✦</div>
+
+      <h3>
+        No class activities recorded
+      </h3>
+
+      <p>
+        Add the student's first
+        classroom activity.
+      </p>
+    </div>
+  )}
+</section>
 
       {/* =====================================================
           ASSIGNMENTS
@@ -895,6 +1075,161 @@ export default function StudentDashboard({
           </div>
         </div>
       )}
+
+      {/* =====================================================
+    CLASS ACTIVITY MODAL
+    ===================================================== */}
+
+{isActivityModalOpen && (
+  <div
+    className="modal-overlay"
+    onMouseDown={(event) => {
+      if (
+        event.target ===
+        event.currentTarget
+      ) {
+        setIsActivityModalOpen(false);
+      }
+    }}
+  >
+    <div className="modal">
+      <div className="modal-header">
+        <div>
+          <p className="eyebrow">
+            CLASSROOM PERFORMANCE
+          </p>
+
+          <h3>
+            Add Class Activity
+          </h3>
+
+          <p>
+            Record a classroom activity
+            for {student.firstName}.
+          </p>
+        </div>
+
+        <button
+          className="modal-close"
+          onClick={() =>
+            setIsActivityModalOpen(false)
+          }
+        >
+          ×
+        </button>
+      </div>
+
+      <form
+        className="class-form"
+        onSubmit={
+          handleAddClassActivity
+        }
+      >
+        <div className="form-field">
+          <label>
+            Activity Description
+          </label>
+
+          <textarea
+            rows={4}
+            placeholder="e.g. Excellent participation in today's discussion"
+            value={
+              activityForm.description
+            }
+            onChange={(event) =>
+              setActivityForm(
+                (previous) => ({
+                  ...previous,
+                  description:
+                    event.target.value,
+                }),
+              )
+            }
+            required
+          />
+        </div>
+
+        <div className="form-row">
+          <div className="form-field">
+            <label>
+              Score
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="20"
+              step="0.01"
+              placeholder="18"
+              value={
+                activityForm.score
+              }
+              onChange={(event) =>
+                setActivityForm(
+                  (previous) => ({
+                    ...previous,
+                    score:
+                      event.target.value,
+                  }),
+                )
+              }
+              required
+            />
+
+            <small className="form-field-hint">
+              Score must be between
+              1 and 20.
+            </small>
+          </div>
+
+          <div className="form-field">
+            <label>
+              Date
+            </label>
+
+            <input
+              type="date"
+              value={
+                activityForm.date
+              }
+              onChange={(event) =>
+                setActivityForm(
+                  (previous) => ({
+                    ...previous,
+                    date:
+                      event.target.value,
+                  }),
+                )
+              }
+              required
+            />
+          </div>
+        </div>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() =>
+              setIsActivityModalOpen(
+                false,
+              )
+            }
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="primary-button"
+          >
+            Save Activity
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 
       {/* =====================================================
           ASSIGNMENT MODAL
