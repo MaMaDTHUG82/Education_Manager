@@ -16,6 +16,7 @@ interface Student {
   grades?: Grade[];
   assignments?: Assignment[];
   encouragements?: Encouragement[];
+  attendanceRecords?: AttendanceRecord[];
 }
 
 interface Grade {
@@ -51,6 +52,11 @@ interface StudentDashboardProps {
   classInfo: ClassInfo;
   onBack: () => void;
   onUpdateStudent: (student: Student) => void;
+}
+
+interface AttendanceRecord {
+  date: string;
+  present: boolean;
 }
 
 export default function StudentDashboard({
@@ -99,12 +105,22 @@ export default function StudentDashboard({
   const encouragements =
     student.encouragements ?? [];
 
-  const attendance = student.attendance ?? {
-    present: 26,
-    absent: 3,
-    late: 1,
-    total: 30,
-  };
+  const attendanceRecords =
+  student.attendanceRecords ?? [];
+
+  const attendance = {
+  present: attendanceRecords.filter(
+    (record) => record.present,
+  ).length,
+
+  absent: attendanceRecords.filter(
+    (record) => !record.present,
+  ).length,
+
+  late: student.attendance?.late ?? 0,
+
+  total: attendanceRecords.length,
+};
 
   const age = useMemo(() => {
     const birth = new Date(student.birthDate);
@@ -430,7 +446,7 @@ export default function StudentDashboard({
           <div className="student-section-header">
             <div>
               <p className="eyebrow">
-                TEMPORARY VIEW
+                ATTENDANCE RECORD
               </p>
 
               <h3>Attendance</h3>
