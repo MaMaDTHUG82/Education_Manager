@@ -178,7 +178,7 @@ export default function Classes() {
             ),
           );
         }}
-        onMoveStudent={(
+        onMoveStudent={( 
           studentId,
           targetClassId,
         ) => {
