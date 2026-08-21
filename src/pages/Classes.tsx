@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ClassDashboard from "./ClassDashboard";
 import StudentDashboard from "./StudentDashboard";
+import { useApp } from "../AppContext";
 
 export interface Student {
   id: number;
@@ -26,13 +27,13 @@ export interface ClassItem {
   schedule: ClassSchedule[];
 }
 
-const initialClasses: ClassItem[] = [
-  
-];
+
 
 export default function Classes() {
-  const [classes, setClasses] =
-    useState<ClassItem[]>(initialClasses);
+  const {
+  classes,
+  setClasses,
+} = useApp();
 
   const [selectedClassId, setSelectedClassId] =
     useState<number | null>(null);

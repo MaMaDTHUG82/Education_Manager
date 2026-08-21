@@ -50,34 +50,21 @@ export interface AppContextValue {
 }
 
 const AppContext =
-  createContext<AppContextValue | undefined>(
-    undefined,
-  );
+  createContext<
+    AppContextValue | undefined
+  >(undefined);
 
 export function AppProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  /*
-   * Global classes state.
-   *
-   * In the next step we will move the current
-   * Classes.tsx state here.
-   */
   const [classes, setClasses] =
     useState<ClassItem[]>([]);
 
-  /*
-   * Global recent activities.
-   */
   const [activities, setActivities] =
     useState<RecentActivity[]>([]);
 
-  /*
-   * Add a new activity to the beginning
-   * of the activity list.
-   */
   const addActivity = (
     activity: Omit<
       RecentActivity,
@@ -96,13 +83,6 @@ export function AppProvider({
     ]);
   };
 
-  /*
-   * Clear all recent activities.
-   *
-   * We probably won't need this in the UI yet,
-   * but having the function here makes the
-   * context ready for Settings later.
-   */
   const clearActivities = () => {
     setActivities([]);
   };
@@ -125,10 +105,6 @@ export function AppProvider({
   );
 }
 
-/*
- * Main hook used by Dashboard, Classes,
- * ClassDashboard and StudentDashboard.
- */
 export function useApp() {
   const context =
     useContext(AppContext);
