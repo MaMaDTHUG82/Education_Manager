@@ -412,6 +412,15 @@ export default function StudentDashboard({
             setIsScoreModalOpen(true)
           }
         >
+          Work Book
+        </button>
+
+        <button
+          className="primary-button"
+          onClick={() =>
+            setIsScoreModalOpen(true)
+          }
+        >
           + Add Score
         </button>
       </header>

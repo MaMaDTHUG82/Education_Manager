@@ -19,6 +19,7 @@ function App() {
 
       case "notes":
         return <Notes />;
+        
 
       case "settings":
         return <Settings />;

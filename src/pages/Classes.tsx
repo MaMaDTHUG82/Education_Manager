@@ -178,6 +178,16 @@ export default function Classes() {
             ),
           );
         }}
+        onDeleteClass={(classId) => {
+  setClasses((previous) =>
+    previous.filter(
+      (item) => item.id !== classId
+    )
+  );
+
+  setSelectedClassId(null);
+  setSelectedStudentId(null);
+}}
         onMoveStudent={( 
           studentId,
           targetClassId,

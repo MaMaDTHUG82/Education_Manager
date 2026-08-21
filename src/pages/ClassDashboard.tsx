@@ -49,17 +49,26 @@ interface ClassInfo {
 
 interface ClassDashboardProps {
   classInfo: ClassInfo;
+
   allClasses: ClassInfo[];
+
   onBack: () => void;
+
   onUpdateClass: (
     updatedClass: ClassInfo,
   ) => void;
+
   onMoveStudent: (
     studentId: number,
     targetClassId: number,
   ) => void;
+
   onSelectStudent: (
     student: Student,
+  ) => void;
+
+  onDeleteClass: (
+    classId: number,
   ) => void;
 }
 
@@ -70,7 +79,20 @@ export default function ClassDashboard({
   onUpdateClass,
   onMoveStudent,
   onSelectStudent,
+  onDeleteClass,
 }: ClassDashboardProps) {
+
+  const handleDeleteClass = () => {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${classInfo.name}"? This action cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  onDeleteClass(classInfo.id);
+};
   const [isAddStudentOpen, setIsAddStudentOpen] =
     useState(false);
 
@@ -313,6 +335,7 @@ export default function ClassDashboard({
       return;
     }
 
+
     const confirmed =
       window.confirm(
         `Remove ${student.firstName} ${student.lastName} from this class?`,
@@ -372,6 +395,15 @@ export default function ClassDashboard({
         </div>
 
         <div className="class-dashboard-actions">
+          
+          <button
+  className="danger-button"
+  onClick={handleDeleteClass}
+>
+  Delete Class
+</button>
+          
+          
           <button
             className="secondary-button"
             onClick={
@@ -380,7 +412,7 @@ export default function ClassDashboard({
           >
             ✓ Attendance
           </button>
-
+          
           <button
             className="primary-button"
             onClick={() =>
