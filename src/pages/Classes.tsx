@@ -10,6 +10,12 @@ export interface Student {
   birthDate: string;
 }
 
+export interface ClassSchedule {
+  day: number;
+  startTime: string;
+  endTime: string;
+}
+
 export interface ClassItem {
   id: number;
   name: string;
@@ -17,66 +23,11 @@ export interface ClassItem {
   subject: string;
   location: string;
   students: Student[];
+  schedule: ClassSchedule[];
 }
 
 const initialClasses: ClassItem[] = [
-  {
-    id: 1,
-    name: "Mathematics 7/1",
-    description:
-      "Seventh grade mathematics class",
-    subject: "Mathematics",
-    location: "Room 204",
-    students: [
-      {
-        id: 101,
-        firstName: "Ali",
-        lastName: "Rahimi",
-        gender: "Male",
-        birthDate: "2012-05-12",
-      },
-      {
-        id: 102,
-        firstName: "Sara",
-        lastName: "Mohammadi",
-        gender: "Female",
-        birthDate: "2012-08-20",
-      },
-      {
-        id: 103,
-        firstName: "Mohammad",
-        lastName: "Ahmadi",
-        gender: "Male",
-        birthDate: "2012-02-11",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Science 8/2",
-    description:
-      "General science class",
-    subject: "Science",
-    location: "Science Lab",
-    students: [
-      {
-        id: 104,
-        firstName: "Amir",
-        lastName: "Hosseini",
-        gender: "Male",
-        birthDate: "2011-06-10",
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Physics 9/1",
-    description:
-      "Introduction to physics",
-    subject: "Physics",
-    location: "Room 301",
-    students: [],
-  },
+  
 ];
 
 export default function Classes() {
@@ -96,11 +47,12 @@ export default function Classes() {
     useState("");
 
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    subject: "",
-    location: "",
-  });
+  name: "",
+  description: "",
+  subject: "",
+  location: "",
+  schedule: [] as ClassSchedule[],
+});
 
   const selectedClass = classes.find(
     (item) => item.id === selectedClassId,
@@ -286,7 +238,54 @@ export default function Classes() {
       [field]: value,
     }));
   };
-
+  const addSchedule = () => {
+  setForm((previous) => ({
+    ...previous,
+    schedule: [
+      ...previous.schedule,
+      {
+        day: 1,
+        startTime: "10:00",
+        endTime: "11:30",
+      },
+    ],
+  }));
+};
+const removeSchedule = (
+  index: number,
+) => {
+  setForm((previous) => ({
+    ...previous,
+    schedule: previous.schedule.filter(
+      (_, scheduleIndex) =>
+        scheduleIndex !== index,
+    ),
+  }));
+};
+const updateSchedule = (
+  index: number,
+  field:
+    | "day"
+    | "startTime"
+    | "endTime",
+  value: string,
+) => {
+  setForm((previous) => ({
+    ...previous,
+    schedule: previous.schedule.map(
+      (schedule, scheduleIndex) =>
+        scheduleIndex === index
+          ? {
+              ...schedule,
+              [field]:
+                field === "day"
+                  ? Number(value)
+                  : value,
+            }
+          : schedule,
+    ),
+  }));
+};
   const handleCreateClass = (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
@@ -301,13 +300,14 @@ export default function Classes() {
     }
 
     const newClass: ClassItem = {
-      id: Date.now(),
-      name: form.name.trim(),
-      description: form.description.trim(),
-      subject: form.subject.trim(),
-      location: form.location.trim(),
-      students: [],
-    };
+    id: Date.now(),
+    name: form.name.trim(),
+    description: form.description.trim(),
+    subject: form.subject.trim(),
+    location: form.location.trim(),
+    students: [],
+    schedule: form.schedule,
+  };
 
     setClasses((previous) => [
       ...previous,
@@ -319,6 +319,7 @@ export default function Classes() {
       description: "",
       subject: "",
       location: "",
+      schedule: [],
     });
 
     setIsModalOpen(false);
@@ -561,7 +562,150 @@ export default function Classes() {
                   }
                 />
               </div>
+                    <div className="schedule-section">
+  <div className="schedule-section-header">
+    <div>
+      <label>Class Schedule</label>
 
+      <p>
+        Choose the days and time for this
+        class.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      className="secondary-button"
+      onClick={addSchedule}
+    >
+      + Add Day
+    </button>
+  </div>
+
+  {form.schedule.length === 0 ? (
+    <div className="schedule-empty">
+      <span>◷</span>
+
+      <p>
+        No schedule added yet.
+      </p>
+
+      <small>
+        Add the days and time when this
+        class takes place.
+      </small>
+    </div>
+  ) : (
+    <div className="schedule-list">
+      {form.schedule.map(
+        (schedule, index) => (
+          <div
+            className="schedule-row"
+            key={index}
+          >
+            <div className="form-field">
+              <label>
+                Day
+              </label>
+
+              <select
+                value={schedule.day}
+                onChange={(event) =>
+                  updateSchedule(
+                    index,
+                    "day",
+                    event.target.value,
+                  )
+                }
+              >
+                <option value={0}>
+                  Sunday
+                </option>
+
+                <option value={1}>
+                  Monday
+                </option>
+
+                <option value={2}>
+                  Tuesday
+                </option>
+
+                <option value={3}>
+                  Wednesday
+                </option>
+
+                <option value={4}>
+                  Thursday
+                </option>
+
+                <option value={5}>
+                  Friday
+                </option>
+
+                <option value={6}>
+                  Saturday
+                </option>
+              </select>
+            </div>
+
+            <div className="form-field">
+              <label>
+                Start
+              </label>
+
+              <input
+                type="time"
+                value={
+                  schedule.startTime
+                }
+                onChange={(event) =>
+                  updateSchedule(
+                    index,
+                    "startTime",
+                    event.target.value,
+                  )
+                }
+                required
+              />
+            </div>
+
+            <div className="form-field">
+              <label>
+                End
+              </label>
+
+              <input
+                type="time"
+                value={
+                  schedule.endTime
+                }
+                onChange={(event) =>
+                  updateSchedule(
+                    index,
+                    "endTime",
+                    event.target.value,
+                  )
+                }
+                required
+              />
+            </div>
+
+            <button
+              type="button"
+              className="schedule-remove-button"
+              onClick={() =>
+                removeSchedule(index)
+              }
+              title="Remove schedule"
+            >
+              ×
+            </button>
+          </div>
+        ),
+      )}
+    </div>
+  )}
+</div>
               <div className="modal-actions">
                 <button
                   type="button"

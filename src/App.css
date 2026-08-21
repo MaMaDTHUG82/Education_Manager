@@ -2832,3 +2832,167 @@
 .danger-button:active {
   transform: scale(0.97);
 }
+
+/* =========================================================
+   CLASS SCHEDULE
+   ========================================================= */
+
+.schedule-section {
+  margin-top: 4px;
+  padding-top: 18px;
+
+  border-top: 1px solid #1f1f25;
+}
+
+.schedule-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 14px;
+}
+
+.schedule-section-header label {
+  display: block;
+
+  color: #e4e4e7;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.schedule-section-header p {
+  margin: 5px 0 0;
+
+  color: #62626b;
+
+  font-size: 8px;
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.schedule-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(130px, 1.3fr)
+    minmax(100px, 1fr)
+    minmax(100px, 1fr)
+    34px;
+
+  align-items: end;
+
+  gap: 10px;
+
+  padding: 12px;
+
+  border: 1px solid #24242b;
+  border-radius: 10px;
+
+  background: #111116;
+}
+
+.schedule-row .form-field {
+  margin: 0;
+}
+
+.schedule-remove-button {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #4a2020;
+  border-radius: 8px;
+
+  background: #241416;
+  color: #f87171;
+
+  font-size: 18px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.schedule-remove-button:hover {
+  background: #451a1a;
+  border-color: #7f1d1d;
+  color: #ffffff;
+}
+
+.schedule-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  border: 1px dashed #292930;
+  border-radius: 10px;
+
+  background: #101014;
+
+  text-align: center;
+}
+
+.schedule-empty span {
+  margin-bottom: 7px;
+
+  color: #71717a;
+
+  font-size: 18px;
+}
+
+.schedule-empty p {
+  margin: 0;
+
+  color: #a1a1aa;
+
+  font-size: 9px;
+}
+
+.schedule-empty small {
+  margin-top: 5px;
+
+  color: #52525b;
+
+  font-size: 8px;
+}
+
+@media (max-width: 650px) {
+  .schedule-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .schedule-row {
+    grid-template-columns: 1fr 1fr;
+
+    align-items: end;
+  }
+
+  .schedule-row .form-field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .schedule-remove-button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+  }
+}
