@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useApp } from "../AppContext";
 
 interface Grade {
   id: number;
@@ -55,8 +56,8 @@ interface ClassDashboardProps {
   onBack: () => void;
 
   onUpdateClass: (
-    updatedClass: ClassInfo,
-  ) => void;
+  updatedClass: ClassItem
+) => void;
 
   onMoveStudent: (
     studentId: number,
@@ -82,6 +83,7 @@ export default function ClassDashboard({
   onDeleteClass,
 }: ClassDashboardProps) {
 
+  const { addActivity } = useApp();
   const handleDeleteClass = () => {
   const confirmed = window.confirm(
     `Are you sure you want to delete "${classInfo.name}"? This action cannot be undone.`
@@ -266,7 +268,11 @@ export default function ClassDashboard({
       ...classInfo,
       students: updatedStudents,
     });
-
+    addActivity({
+      type: "attendance_recorded",
+      title: classInfo.name,
+      description: `Attendance recorded for ${attendanceDate}`,
+    });
     setIsAttendanceOpen(false);
   };
 
@@ -311,7 +317,11 @@ export default function ClassDashboard({
         newStudent,
       ],
     });
-
+    addActivity({
+      type: "student_added",
+      title: `${newStudent.firstName} ${newStudent.lastName}`,
+      description: `Added to ${classInfo.name}`,
+    });
     setStudentForm({
       firstName: "",
       lastName: "",
@@ -353,7 +363,11 @@ export default function ClassDashboard({
             item.id !== studentId,
         ),
     });
-
+    addActivity({
+        type: "student_removed",
+        title: `${student.firstName} ${student.lastName}`,
+        description: `Removed from ${classInfo.name}`,
+      });
     setMenuStudentId(null);
   };
 

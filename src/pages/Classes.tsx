@@ -33,6 +33,7 @@ export default function Classes() {
   const {
   classes,
   setClasses,
+  addActivity,
 } = useApp();
 
   const [selectedClassId, setSelectedClassId] =
@@ -314,7 +315,11 @@ const updateSchedule = (
       ...previous,
       newClass,
     ]);
-
+    addActivity({
+      type: "class_created",
+      title: newClass.name,
+      description: `New ${newClass.subject} class created`,
+    });
     setForm({
       name: "",
       description: "",

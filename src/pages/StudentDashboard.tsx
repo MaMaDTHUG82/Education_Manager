@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useApp } from "../AppContext";
 
 interface ClassActivity {
   id: number;
@@ -73,6 +74,8 @@ export default function StudentDashboard({
   onBack,
   onUpdateStudent,
 }: StudentDashboardProps) {
+  const { addActivity } = useApp();
+
   const [isExamModalOpen, setIsExamModalOpen] =
     useState(false);
 
@@ -238,6 +241,12 @@ export default function StudentDashboard({
       grades: [...grades, newGrade],
     });
 
+    addActivity({
+  type: "grade_added",
+  title: `${student.firstName} ${student.lastName}`,
+  description: `Exam "${newGrade.examName}" — ${newGrade.score}/${newGrade.maxScore}`,
+});
+
     setExamForm({
       examName: "",
       score: "",
@@ -282,7 +291,11 @@ export default function StudentDashboard({
       newActivity,
     ],
   });
-
+  addActivity({
+  type: "class_activity_added",
+  title: `${student.firstName} ${student.lastName}`,
+  description: `Class activity "${newActivity.description}" — ${newActivity.score}/20`,
+});
   setActivityForm({
     description: "",
     score: "",
@@ -319,7 +332,11 @@ export default function StudentDashboard({
         newAssignment,
       ],
     });
-
+    addActivity({
+  type: "assignment_added",
+  title: `${student.firstName} ${student.lastName}`,
+  description: `Assignment "${newAssignment.title}" added`,
+});
     setAssignmentForm({
       title: "",
       description: "",
@@ -359,7 +376,11 @@ export default function StudentDashboard({
         newEncouragement,
       ],
     });
-
+    addActivity({
+  type: "encouragement_added",
+  title: `${student.firstName} ${student.lastName}`,
+  description: `+${newEncouragement.points} points — ${newEncouragement.reason}`,
+});
     setScoreForm({
       reason: "",
       points: "",
