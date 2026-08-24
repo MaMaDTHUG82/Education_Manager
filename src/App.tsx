@@ -1,3 +1,4 @@
+import { getDatabase } from "./database/db";
 import { useState } from "react";
 import "./App.css";
 
@@ -8,6 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Classes from "./pages/Classes";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
+
+
 
 export type Page =
   | "dashboard"
@@ -35,7 +38,7 @@ function App() {
         return <Dashboard />;
     }
   };
-
+            
   return (
     <AppProvider>
       <div className="app">
