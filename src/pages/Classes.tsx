@@ -124,14 +124,18 @@ export default function Classes() {
           setSelectedClassId(null)
         }
         onUpdateClass={(updatedClass) => {
-          setClasses((previous) =>
-            previous.map((item) =>
-              item.id === updatedClass.id
-                ? updatedClass
-                : item,
-            ),
-          );
-        }}
+  setClasses((previous) =>
+    previous.map((item) =>
+      item.id === updatedClass.id
+        ? {
+            ...item,
+            ...updatedClass,
+            schedule: item.schedule,
+          }
+        : item,
+    ),
+  );
+}}
         onDeleteClass={(classId) => {
   setClasses((previous) =>
     previous.filter(

@@ -56,7 +56,7 @@ interface ClassDashboardProps {
   onBack: () => void;
 
   onUpdateClass: (
-  updatedClass: ClassItem
+  updatedClass: ClassInfo
 ) => void;
 
   onMoveStudent: (
