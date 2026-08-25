@@ -429,11 +429,9 @@ export default function StudentDashboard({
 
         <button
           className="primary-button"
-          onClick={() =>
-            setIsScoreModalOpen(true)
-          }
+          
         >
-          Work Book
+          Report Card
         </button>
 
         <button
