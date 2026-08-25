@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-
-import { getDatabase } from "./database/db";
+import { useState } from "react";
 
 import "./App.css";
 
@@ -30,28 +28,6 @@ function App() {
     useState<Page>("dashboard");
 
 
-  useEffect(() => {
-
-    getDatabase()
-      .then(() => {
-
-        console.log(
-          "SQLite database connected"
-        );
-
-      })
-      .catch((error) => {
-
-        console.error(
-          "SQLite connection error:",
-          error
-        );
-
-      });
-
-  }, []);
-
-
   const renderPage = () => {
 
     switch (currentPage) {
@@ -66,7 +42,6 @@ function App() {
         return <Settings />;
 
       case "dashboard":
-
       default:
         return <Dashboard />;
 
@@ -82,13 +57,9 @@ function App() {
       <div className="app">
 
         <Sidebar
-
           currentPage={currentPage}
-
           onNavigate={setCurrentPage}
-
         />
-
 
         <main className="main-content">
 
