@@ -3,12 +3,67 @@ import ClassDashboard from "./ClassDashboard";
 import StudentDashboard from "./StudentDashboard";
 import { useApp } from "../AppContext";
 
+export interface AttendanceRecord {
+  date: string;
+  present: boolean;
+}
+
+export interface Grade {
+  id: number;
+  examName: string;
+  score: number;
+  maxScore: number;
+  examDate: string;
+}
+
+export interface ClassActivity {
+  id: number;
+  description: string;
+  score: number;
+  date: string;
+}
+
+export interface Assignment {
+  id: number;
+  title: string;
+  description: string;
+  dueDate: string;
+}
+
+export interface Encouragement {
+  id: number;
+  reason: string;
+  points: number;
+  date: string;
+}
+
+export interface StudentAttendance {
+  present: number;
+  absent: number;
+  late: number;
+  total: number;
+}
+
 export interface Student {
   id: number;
   firstName: string;
   lastName: string;
   gender: "Male" | "Female";
   birthDate: string;
+
+  notes?: string;
+
+  attendance?: StudentAttendance;
+
+  grades?: Grade[];
+
+  classActivities?: ClassActivity[];
+
+  assignments?: Assignment[];
+
+  encouragements?: Encouragement[];
+
+  attendanceRecords?: AttendanceRecord[];
 }
 
 export interface ClassSchedule {

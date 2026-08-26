@@ -3,17 +3,22 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
   type Dispatch,
   type SetStateAction,
 } from "react";
 
-import type { ClassItem } from "./pages/Classes";
+import type {
+  ClassItem,
+ // Student,
+} from "./pages/Classes";
 
 import {
   loadData,
   saveData,
+  type AppData,
 } from "./storage/storage";
 
 
@@ -39,8 +44,7 @@ export interface RecentActivity {
 }
 
 
-export interface AppContextValue {
-
+interface AppContextValue {
   classes: ClassItem[];
 
   setClasses: Dispatch<
@@ -53,7 +57,7 @@ export interface AppContextValue {
     activity: Omit<
       RecentActivity,
       "id" | "timestamp"
-    >
+    >,
   ) => void;
 
   clearActivities: () => void;
@@ -66,6 +70,12 @@ const AppContext =
   >(undefined);
 
 
+/*
+ * --------------------------------------------------
+ * APP PROVIDER
+ * --------------------------------------------------
+ */
+
 export function AppProvider({
   children,
 }: {
@@ -75,39 +85,91 @@ export function AppProvider({
   const [classes, setClasses] =
     useState<ClassItem[]>([]);
 
-
   const [activities, setActivities] =
     useState<RecentActivity[]>([]);
 
 
   /*
-   * Load saved data when the application starts.
+   * Prevents the initial empty state from
+   * overwriting the JSON file before loading.
    */
+  const dataLoaded =
+    useRef(false);
+
+
+  /*
+   * --------------------------------------------------
+   * LOAD DATA
+   * --------------------------------------------------
+   */
+
   useEffect(() => {
 
-    let mounted = true;
+    let cancelled = false;
 
 
-    async function initializeData() {
+    const initializeData =
+      async () => {
 
-      const data = await loadData();
+        try {
 
-
-      if (!mounted) {
-        return;
-      }
-
-
-      setClasses(
-        data.classes as ClassItem[]
-      );
+          const data =
+            await loadData();
 
 
-      setActivities(
-        data.activities as RecentActivity[]
-      );
+          if (cancelled) {
+            return;
+          }
 
-    }
+
+          /*
+           * Restore classes.
+           *
+           * All student information is inside
+           * the students belonging to each class.
+           */
+          setClasses(
+            Array.isArray(data.classes)
+              ? (data.classes as ClassItem[])
+              : [],
+          );
+
+
+          /*
+           * Restore recent activities.
+           */
+          setActivities(
+            Array.isArray(data.activities)
+              ? (
+                  data.activities as RecentActivity[]
+                )
+              : [],
+          );
+
+
+          /*
+           * Only enable saving AFTER loading
+           * existing data.
+           */
+          dataLoaded.current = true;
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load application data:",
+            error,
+          );
+
+
+          /*
+           * Allow the application to continue
+           * even if loading fails.
+           */
+          dataLoaded.current = true;
+
+        }
+
+      };
 
 
     initializeData();
@@ -115,7 +177,7 @@ export function AppProvider({
 
     return () => {
 
-      mounted = false;
+      cancelled = true;
 
     };
 
@@ -123,124 +185,370 @@ export function AppProvider({
 
 
   /*
-   * Save classes whenever they change.
+   * --------------------------------------------------
+   * SAVE DATA
+   * --------------------------------------------------
    *
-   * We intentionally skip the initial empty state.
-   * The data loaded from storage will be applied
-   * by the initialization effect above.
+   * There is ONE save effect for the entire
+   * application state.
+   *
+   * This prevents classes and activities from
+   * overwriting each other.
    */
+
   useEffect(() => {
 
-    const timeout = setTimeout(
-      async () => {
+    if (!dataLoaded.current) {
+      return;
+    }
 
-        const data = await loadData();
 
-        await saveData({
-          ...data,
-          classes,
-        });
+    const timeout =
+      window.setTimeout(
+        async () => {
 
-      },
-      0
-    );
+          try {
+
+            /*
+             * Create normalized student data.
+             *
+             * The actual source of truth remains:
+             *
+             * classes -> students
+             *
+             * These arrays are also stored in JSON
+             * so backup/export will be easier later.
+             */
+
+            const students =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.map(
+                    (student) => ({
+                      ...student,
+
+                      classId:
+                        classItem.id,
+                    }),
+                  ),
+              );
+
+
+            /*
+             * Attendance
+             */
+
+            const attendance =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.flatMap(
+                    (student) =>
+                      (
+                        student.attendanceRecords ??
+                        []
+                      ).map(
+                        (record) => ({
+                          ...record,
+
+                          studentId:
+                            student.id,
+
+                          classId:
+                            classItem.id,
+                        }),
+                      ),
+                  ),
+              );
+
+
+            /*
+             * Exams / Grades
+             */
+
+            const exams =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.flatMap(
+                    (student) =>
+                      (
+                        student.grades ??
+                        []
+                      ).map(
+                        (grade) => ({
+                          ...grade,
+
+                          studentId:
+                            student.id,
+
+                          classId:
+                            classItem.id,
+                        }),
+                      ),
+                  ),
+              );
+
+
+            /*
+             * Assignments
+             */
+
+            const assignments =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.flatMap(
+                    (student) =>
+                      (
+                        student.assignments ??
+                        []
+                      ).map(
+                        (assignment) => ({
+                          ...assignment,
+
+                          studentId:
+                            student.id,
+
+                          classId:
+                            classItem.id,
+                        }),
+                      ),
+                  ),
+              );
+
+
+            /*
+             * Class activities
+             */
+
+            const classActivities =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.flatMap(
+                    (student) =>
+                      (
+                        student.classActivities ??
+                        []
+                      ).map(
+                        (activity) => ({
+                          ...activity,
+
+                          studentId:
+                            student.id,
+
+                          classId:
+                            classItem.id,
+                        }),
+                      ),
+                  ),
+              );
+
+
+            /*
+             * Encouragements
+             */
+
+            const encouragements =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students.flatMap(
+                    (student) =>
+                      (
+                        student.encouragements ??
+                        []
+                      ).map(
+                        (encouragement) => ({
+                          ...encouragement,
+
+                          studentId:
+                            student.id,
+
+                          classId:
+                            classItem.id,
+                        }),
+                      ),
+                  ),
+              );
+
+
+            /*
+             * Student notes
+             */
+
+            const notes =
+              classes.flatMap(
+                (classItem) =>
+                  classItem.students
+                    .filter(
+                      (student) =>
+                        Boolean(
+                          student.notes?.trim(),
+                        ),
+                    )
+                    .map(
+                      (student) => ({
+                        studentId:
+                          student.id,
+
+                        classId:
+                          classItem.id,
+
+                        text:
+                          student.notes ?? "",
+                      }),
+                    ),
+              );
+
+
+            /*
+             * Build the complete JSON object.
+             */
+
+            const dataToSave: AppData = {
+
+              version: 1,
+
+              classes,
+
+              students,
+
+              attendance,
+
+              exams,
+
+              assignments,
+
+              classActivities,
+
+              encouragements,
+
+              notes,
+
+              activities,
+
+            };
+
+
+            await saveData(
+              dataToSave,
+            );
+
+
+            console.log(
+              "Application data saved successfully.",
+            );
+
+          } catch (error) {
+
+            console.error(
+              "Failed to save application data:",
+              error,
+            );
+
+          }
+
+        },
+
+        /*
+         * Small debounce.
+         *
+         * Prevents multiple immediate writes
+         * when several React states change quickly.
+         */
+        100,
+      );
 
 
     return () => {
 
-      clearTimeout(timeout);
+      window.clearTimeout(
+        timeout,
+      );
 
     };
 
-  }, [classes]);
+  }, [
+    classes,
+    activities,
+  ]);
 
 
   /*
-   * Save activities whenever they change.
+   * --------------------------------------------------
+   * RECENT ACTIVITIES
+   * --------------------------------------------------
    */
-  useEffect(() => {
-
-    const timeout = setTimeout(
-      async () => {
-
-        const data = await loadData();
-
-        await saveData({
-          ...data,
-          activities,
-        });
-
-      },
-      0
-    );
-
-
-    return () => {
-
-      clearTimeout(timeout);
-
-    };
-
-  }, [activities]);
-
 
   const addActivity = (
     activity: Omit<
       RecentActivity,
       "id" | "timestamp"
-    >
+    >,
   ) => {
 
-    const now = Date.now();
+    const now =
+      Date.now();
 
 
-    setActivities((previous) => [
+    setActivities(
+      (previous) => [
 
-      {
-        ...activity,
-        id: now,
-        timestamp: now,
-      },
+        {
+          ...activity,
 
-      ...previous,
+          id: now,
 
-    ]);
+          timestamp: now,
+        },
 
-  };
+        ...previous,
 
-
-  const clearActivities = () => {
-
-    setActivities([]);
+      ],
+    );
 
   };
 
 
-  const value = useMemo(
-    () => ({
+  const clearActivities =
+    () => {
 
-      classes,
+      setActivities([]);
 
-      setClasses,
+    };
 
-      activities,
 
-      addActivity,
+  /*
+   * --------------------------------------------------
+   * CONTEXT VALUE
+   * --------------------------------------------------
+   */
 
-      clearActivities,
+  const value =
+    useMemo(
+      () => ({
 
-    }),
+        classes,
 
-    [
-      classes,
-      activities,
-    ]
-  );
+        setClasses,
+
+        activities,
+
+        addActivity,
+
+        clearActivities,
+
+      }),
+
+      [
+        classes,
+        activities,
+      ],
+    );
 
 
   return (
 
-    <AppContext.Provider value={value}>
+    <AppContext.Provider
+      value={value}
+    >
 
       {children}
 
@@ -251,16 +559,24 @@ export function AppProvider({
 }
 
 
+/*
+ * --------------------------------------------------
+ * useApp
+ * --------------------------------------------------
+ */
+
 export function useApp() {
 
   const context =
-    useContext(AppContext);
+    useContext(
+      AppContext,
+    );
 
 
   if (!context) {
 
     throw new Error(
-      "useApp must be used inside AppProvider"
+      "useApp must be used inside AppProvider",
     );
 
   }
