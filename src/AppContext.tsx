@@ -61,6 +61,26 @@ interface AppContextValue {
   ) => void;
 
   clearActivities: () => void;
+  tasks: Task[];
+
+setTasks: Dispatch<
+  SetStateAction<Task[]>
+>;
+
+addTask: (
+  task: Omit<
+    Task,
+    "id" | "createdAt" | "completed"
+  >
+) => void;
+
+deleteTask: (
+  taskId: number
+) => void;
+
+completeTask: (
+  taskId: number
+) => void;
 }
 
 
@@ -78,10 +98,14 @@ const AppContext =
 
 export function AppProvider({
   children,
+  
 }: {
   children: ReactNode;
+  
 }) {
-
+  const [tasks, setTasks] =
+  useState<Task[]>([]);
+  
   const [classes, setClasses] =
     useState<ClassItem[]>([]);
 
@@ -95,7 +119,60 @@ export function AppProvider({
    */
   const dataLoaded =
     useRef(false);
+  const addTask = (
+  task: Omit<
+    Task,
+    "id" | "createdAt" | "completed"
+  >
+) => {
 
+  const now = Date.now();
+
+  setTasks((previous) => [
+
+    {
+      ...task,
+
+      id: now,
+
+      createdAt: now,
+
+      completed: false,
+    },
+
+    ...previous,
+
+  ]);
+
+};
+const deleteTask = (
+  taskId: number
+) => {
+
+  setTasks((previous) =>
+    previous.filter(
+      (task) =>
+        task.id !== taskId
+    )
+  );
+
+};
+const completeTask = (
+  taskId: number
+) => {
+
+  setTasks((previous) =>
+    previous.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            completed: true,
+          }
+        : task
+    )
+  );
+
+};
 
   /*
    * --------------------------------------------------
@@ -110,7 +187,7 @@ export function AppProvider({
 
     const initializeData =
       async () => {
-
+        
         try {
 
           const data =
@@ -133,7 +210,11 @@ export function AppProvider({
               ? (data.classes as ClassItem[])
               : [],
           );
-
+          setTasks(
+            Array.isArray(data.tasks)
+              ? (data.tasks as Task[])
+              : [],
+          );
 
           /*
            * Restore recent activities.
@@ -168,7 +249,8 @@ export function AppProvider({
           dataLoaded.current = true;
 
         }
-
+        
+        
       };
 
 
@@ -401,30 +483,19 @@ export function AppProvider({
             /*
              * Build the complete JSON object.
              */
-
-            const dataToSave: AppData = {
-
-              version: 1,
-
-              classes,
-
-              students,
-
-              attendance,
-
-              exams,
-
-              assignments,
-
-              classActivities,
-
-              encouragements,
-
-              notes,
-
-              activities,
-
-            };
+              const dataToSave: AppData = {
+                version: 1,
+                classes,
+                students,
+                attendance,
+                exams,
+                assignments,
+                classActivities,
+                encouragements,
+                notes,
+                activities,
+                tasks,
+              };
 
 
             await saveData(
@@ -468,6 +539,7 @@ export function AppProvider({
   }, [
     classes,
     activities,
+    tasks,
   ]);
 
 
@@ -521,40 +593,33 @@ export function AppProvider({
    * --------------------------------------------------
    */
 
-  const value =
-    useMemo(
-      () => ({
+  const value = useMemo(
+  () => ({
+    classes,
+    setClasses,
 
-        classes,
+    activities,
+    addActivity,
+    clearActivities,
 
-        setClasses,
+    tasks,
+    setTasks,
+    addTask,
+    deleteTask,
+    completeTask,
+  }),
+  [
+    classes,
+    activities,
+    tasks,
+  ],
+);
 
-        activities,
-
-        addActivity,
-
-        clearActivities,
-
-      }),
-
-      [
-        classes,
-        activities,
-      ],
-    );
-
-
-  return (
-
-    <AppContext.Provider
-      value={value}
-    >
-
-      {children}
-
-    </AppContext.Provider>
-
-  );
+return (
+  <AppContext.Provider value={value}>
+    {children}
+  </AppContext.Provider>
+);
 
 }
 
@@ -585,3 +650,51 @@ export function useApp() {
   return context;
 
 }
+
+/*
+ * --------------------------------------------------
+ * Tasks
+ * --------------------------------------------------
+ */
+
+export type TaskCategory =
+  | "lesson"
+  | "exam"
+  | "grading"
+  | "student"
+  | "class"
+  | "assignment"
+  | "other";
+
+export type TaskPriority =
+  | "low"
+  | "normal"
+  | "high"
+  | "urgent";
+
+export interface Task {
+  id: number;
+
+  title: string;
+
+  description: string;
+
+  dueDate: string;
+
+  dueTime: string;
+
+  category: TaskCategory;
+
+  priority: TaskPriority;
+
+  classId?: number;
+
+  studentId?: number;
+
+  tags: string[];
+
+  completed: boolean;
+
+  createdAt: number;
+}
+

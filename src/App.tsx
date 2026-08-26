@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard";
 
 import Classes from "./pages/Classes";
 
-import Notes from "./pages/Notes";
+import Tasks from "./pages/Tasks" ;
 
 import Settings from "./pages/Settings";
 
@@ -18,7 +18,7 @@ import Settings from "./pages/Settings";
 export type Page =
   | "dashboard"
   | "classes"
-  | "notes"
+  | "tasks"
   | "settings";
 
 
@@ -35,8 +35,8 @@ function App() {
       case "classes":
         return <Classes />;
 
-      case "notes":
-        return <Notes />;
+      case "tasks":
+        return <Tasks />;
 
       case "settings":
         return <Settings />;

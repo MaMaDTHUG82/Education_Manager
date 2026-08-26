@@ -21,8 +21,8 @@ const navigationItems: {
     icon: "▦",
   },
   {
-    id: "notes",
-    label: "Notes",
+    id: "tasks",
+    label: "Tasks",
     icon: "▤",
   },
 ];

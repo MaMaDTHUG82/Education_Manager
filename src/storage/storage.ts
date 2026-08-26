@@ -13,7 +13,7 @@ import {
 
 export interface AppData {
   version: number;
-
+  
   classes: unknown[];
   students: unknown[];
   attendance: unknown[];
@@ -23,6 +23,7 @@ export interface AppData {
   encouragements: unknown[];
   notes: unknown[];
   activities: unknown[];
+  tasks: unknown[];
 }
 
 
@@ -31,7 +32,7 @@ const FILE_NAME = "education_manager.json";
 
 const defaultData: AppData = {
   version: 1,
-
+  tasks:[],
   classes: [],
   students: [],
   attendance: [],
