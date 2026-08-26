@@ -40,6 +40,7 @@ export interface RecentActivity {
 
 
 export interface AppContextValue {
+
   classes: ClassItem[];
 
   setClasses: Dispatch<
@@ -72,52 +73,113 @@ export function AppProvider({
 }) {
 
   const [classes, setClasses] =
-    useState<ClassItem[]>(() => {
-
-      const data = loadData();
-
-      return data.classes as ClassItem[];
-
-    });
+    useState<ClassItem[]>([]);
 
 
   const [activities, setActivities] =
-    useState<RecentActivity[]>(() => {
+    useState<RecentActivity[]>([]);
 
-      const data = loadData();
 
-      return data.activities as RecentActivity[];
+  /*
+   * Load saved data when the application starts.
+   */
+  useEffect(() => {
 
-    });
+    let mounted = true;
+
+
+    async function initializeData() {
+
+      const data = await loadData();
+
+
+      if (!mounted) {
+        return;
+      }
+
+
+      setClasses(
+        data.classes as ClassItem[]
+      );
+
+
+      setActivities(
+        data.activities as RecentActivity[]
+      );
+
+    }
+
+
+    initializeData();
+
+
+    return () => {
+
+      mounted = false;
+
+    };
+
+  }, []);
 
 
   /*
    * Save classes whenever they change.
+   *
+   * We intentionally skip the initial empty state.
+   * The data loaded from storage will be applied
+   * by the initialization effect above.
    */
   useEffect(() => {
 
-    const data = loadData();
+    const timeout = setTimeout(
+      async () => {
 
-    saveData({
-      ...data,
-      classes,
-    });
+        const data = await loadData();
+
+        await saveData({
+          ...data,
+          classes,
+        });
+
+      },
+      0
+    );
+
+
+    return () => {
+
+      clearTimeout(timeout);
+
+    };
 
   }, [classes]);
 
 
   /*
-   * Save recent activities whenever
-   * they change.
+   * Save activities whenever they change.
    */
   useEffect(() => {
 
-    const data = loadData();
+    const timeout = setTimeout(
+      async () => {
 
-    saveData({
-      ...data,
-      activities,
-    });
+        const data = await loadData();
+
+        await saveData({
+          ...data,
+          activities,
+        });
+
+      },
+      0
+    );
+
+
+    return () => {
+
+      clearTimeout(timeout);
+
+    };
 
   }, [activities]);
 
@@ -130,6 +192,7 @@ export function AppProvider({
   ) => {
 
     const now = Date.now();
+
 
     setActivities((previous) => [
 
@@ -155,25 +218,34 @@ export function AppProvider({
 
   const value = useMemo(
     () => ({
+
       classes,
+
       setClasses,
+
       activities,
+
       addActivity,
+
       clearActivities,
+
     }),
+
     [
       classes,
       activities,
-    ],
+    ]
   );
 
 
   return (
+
     <AppContext.Provider value={value}>
 
       {children}
 
     </AppContext.Provider>
+
   );
 
 }
@@ -184,6 +256,7 @@ export function useApp() {
   const context =
     useContext(AppContext);
 
+
   if (!context) {
 
     throw new Error(
@@ -191,6 +264,7 @@ export function useApp() {
     );
 
   }
+
 
   return context;
 

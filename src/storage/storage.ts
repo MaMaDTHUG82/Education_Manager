@@ -1,3 +1,16 @@
+import {
+  exists,
+  mkdir,
+  readTextFile,
+  writeTextFile,
+} from "@tauri-apps/plugin-fs";
+
+import {
+  appDataDir,
+  join,
+} from "@tauri-apps/api/path";
+
+
 export interface AppData {
   version: number;
 
@@ -12,7 +25,9 @@ export interface AppData {
   activities: unknown[];
 }
 
-const STORAGE_KEY = "education_manager_data";
+
+const FILE_NAME = "education_manager.json";
+
 
 const defaultData: AppData = {
   version: 1,
@@ -29,22 +44,71 @@ const defaultData: AppData = {
 };
 
 
-export function loadData(): AppData {
-  try {
-    const savedData = localStorage.getItem(
-      STORAGE_KEY
-    );
+async function getStoragePath(): Promise<string> {
+  const directory = await appDataDir();
 
-    if (!savedData) {
+  const directoryExists = await exists(directory);
+
+  if (!directoryExists) {
+    await mkdir(directory, {
+      recursive: true,
+    });
+  }
+
+  const filePath = await join(
+    directory,
+    FILE_NAME
+  );
+
+  console.log(
+    "Education Manager storage path:",
+    filePath
+  );
+
+  return filePath;
+}
+
+
+export async function loadData(): Promise<AppData> {
+
+  try {
+
+    const filePath =
+      await getStoragePath();
+
+    const fileExists =
+      await exists(filePath);
+
+
+    if (!fileExists) {
+
+      await saveData(defaultData);
+
       return defaultData;
+
     }
 
-    const parsedData = JSON.parse(savedData);
+
+    const content =
+      await readTextFile(filePath);
+
+
+    if (!content.trim()) {
+
+      return defaultData;
+
+    }
+
+
+    const parsedData =
+      JSON.parse(content);
+
 
     return {
       ...defaultData,
       ...parsedData,
     };
+
 
   } catch (error) {
 
@@ -54,17 +118,31 @@ export function loadData(): AppData {
     );
 
     return defaultData;
+
   }
+
 }
 
 
-export function saveData(data: AppData): void {
+export async function saveData(
+  data: AppData
+): Promise<void> {
+
   try {
 
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(data)
+    const filePath =
+      await getStoragePath();
+
+
+    await writeTextFile(
+      filePath,
+      JSON.stringify(
+        data,
+        null,
+        2
+      )
     );
+
 
   } catch (error) {
 
@@ -73,12 +151,26 @@ export function saveData(data: AppData): void {
       error
     );
 
+    throw error;
+
   }
+
 }
 
 
-export function clearData(): void {
-  localStorage.removeItem(
-    STORAGE_KEY
+export async function clearData(): Promise<void> {
+
+  const filePath =
+    await getStoragePath();
+
+
+  await writeTextFile(
+    filePath,
+    JSON.stringify(
+      defaultData,
+      null,
+      2
+    )
   );
+
 }
