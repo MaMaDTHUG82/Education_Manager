@@ -171,6 +171,7 @@ export default function Dashboard() {
     activities,
     tasks,
     completeTask,
+    deleteTask,
   } = useApp();
 
   const now = new Date();
@@ -378,102 +379,54 @@ export default function Dashboard() {
     now.getFullYear(),
     now.getMonth(),
   ]);
+/*
+ * --------------------------------------------------
+ * UPCOMING CLASSES
+ * --------------------------------------------------
+ */
 
-  /*
-   * --------------------------------------------------
-   * UPCOMING CLASSES
-   * --------------------------------------------------
-   */
+const upcomingClasses = useMemo(() => {
+  const upcoming: {
+    classId: number;
+    className: string;
+    subject: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    date: Date;
+  }[] = [];
 
-  const upcomingClasses =
-    useMemo(() => {
-      const upcoming: {
-        classId: number;
-        className: string;
-        subject: string;
-        location: string;
-        startTime: string;
-        endTime: string;
-        date: Date;
-      }[] = [];
-      const upcomingTasks =
-  useMemo(() => {
-    return tasks
-      .filter((task) => {
-        if (task.completed) {
-          return false;
-        }
-
-        const date = new Date(
-          `${task.dueDate}T${
-            task.dueTime || "23:59"
-          }`,
-        );
-
-        return (
-          date.getTime() >=
-          now.getTime()
-        );
-      })
-      .sort((a, b) => {
-        const dateA = new Date(
-          `${a.dueDate}T${
-            a.dueTime || "23:59"
-          }`,
-        ).getTime();
-
-        const dateB = new Date(
-          `${b.dueDate}T${
-            b.dueTime || "23:59"
-          }`,
-        ).getTime();
-
-        return dateA - dateB;
-      })
-      .slice(0, 5);
-  }, [
-    tasks,
-    now.getTime(),
-  ]);
-      classes.forEach(
-        (classItem) => {
-          classItem.schedule.forEach(
-            (schedule) => {
-              const nextDate =
-                getNextClassDate(
-                  schedule.day,
-                  schedule.startTime,
-                  now,
-                );
-
-              upcoming.push({
-                classId: classItem.id,
-                className:
-                  classItem.name,
-                subject:
-                  classItem.subject,
-                location:
-                  classItem.location,
-                startTime:
-                  schedule.startTime,
-                endTime:
-                  schedule.endTime,
-                date: nextDate,
-              });
-            },
-          );
-        },
+  classes.forEach((classItem) => {
+    classItem.schedule.forEach((schedule) => {
+      const nextDate = getNextClassDate(
+        schedule.day,
+        schedule.startTime,
+        now,
       );
 
-      return upcoming
-        .sort(
-          (a, b) =>
-            a.date.getTime() -
-            b.date.getTime(),
-        )
-        .slice(0, 5);
-    }, [classes, now.getTime()]);
-        /*
+      upcoming.push({
+        classId: classItem.id,
+        className: classItem.name,
+        subject: classItem.subject,
+        location: classItem.location,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        date: nextDate,
+      });
+    });
+  });
+
+  return upcoming
+    .sort(
+      (a, b) =>
+        a.date.getTime() -
+        b.date.getTime(),
+    )
+    .slice(0, 5);
+}, [classes, now.getTime()]);
+
+
+/*
  * --------------------------------------------------
  * UPCOMING TASKS
  * --------------------------------------------------
@@ -520,7 +473,32 @@ const upcomingTasks = useMemo(() => {
     .slice(0, 5);
 
   return upcoming;
-}, [tasks]);
+  return tasks
+    .filter((task) => {
+      if (task.completed) {
+        return false;
+      }
+
+      const date = new Date(
+        `${task.dueDate}T${task.dueTime || "23:59"}`,
+      );
+
+      return date.getTime() >= now.getTime();
+    })
+    .sort((a, b) => {
+      const dateA = new Date(
+        `${a.dueDate}T${a.dueTime || "23:59"}`,
+      ).getTime();
+
+      const dateB = new Date(
+        `${b.dueDate}T${b.dueTime || "23:59"}`,
+      ).getTime();
+
+      return dateA - dateB;
+    })
+    .slice(0, 5);
+}, [tasks, now.getTime()]);
+
   return (
     <div className="page">
       {/* =====================================================
@@ -700,130 +678,131 @@ const upcomingTasks = useMemo(() => {
       <h3>Upcoming</h3>
 
       <span>
-        Next classes and tasks
+        Next scheduled classes and tasks
       </span>
     </div>
   </div>
 
   <div className="activity-list">
 
-    {/* ================= UPCOMING CLASSES ================= */}
+  {/* ================= UPCOMING CLASSES ================= */}
 
-    {upcomingClasses.map(
-      (item, index) => (
+  {upcomingClasses.map(
+    (item, index) => (
+      <div
+        className="activity"
+        key={`class-${item.classId}-${item.date.getTime()}-${index}`}
+      >
         <div
-          className="activity"
-          key={`class-${item.classId}-${item.date.getTime()}-${index}`}
-        >
-          <div
-            className={`activity-dot ${
-              index % 4 === 0
-                ? "purple"
-                : index % 4 === 1
-                  ? "blue"
-                  : index % 4 === 2
-                    ? "green"
-                    : "orange"
-            }`}
-          />
+          className={`activity-dot ${
+            index % 4 === 0
+              ? "purple"
+              : index % 4 === 1
+                ? "blue"
+                : index % 4 === 2
+                  ? "green"
+                  : "orange"
+          }`}
+        />
 
-          <div>
-            <strong>
-              {item.className}
-            </strong>
+        <div>
+          <strong>
+            {item.className}
+          </strong>
 
-            <span>
-              Class ·{" "}
-              {getRelativeDateLabel(
-                item.date,
-                now,
-              )}{" "}
-              ·{" "}
-              {formatTime(
-                item.startTime,
-              )}{" "}
-              -{" "}
-              {formatTime(
-                item.endTime,
-              )}
-            </span>
-
-            <small>
-              {item.subject} ·{" "}
-              {item.location}
-            </small>
-          </div>
-        </div>
-      ),
-    )}
-
-    {/* ================= UPCOMING TASKS ================= */}
-
-    {upcomingTasks.map(
-      (task, index) => (
-        <div
-          className="activity"
-          key={`task-${task.id}`}
-        >
-          <div
-            className={`activity-dot ${
-              index % 4 === 0
-                ? "orange"
-                : index % 4 === 1
-                  ? "purple"
-                  : index % 4 === 2
-                    ? "blue"
-                    : "green"
-            }`}
-          />
-
-          <div>
-            <strong>
-              {task.title}
-            </strong>
-
-            <span>
-              Task · {task.dueDate}
-              {task.dueTime
-                ? ` · ${task.dueTime}`
-                : ""}
-            </span>
-
-            <small>
-              {task.description}
-            </small>
-
-            <button
-              type="button"
-              className="task-complete-button"
-              onClick={() =>
-                completeTask(task.id)
-              }
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ),
-    )}
-
-    {/* ================= NOTHING UPCOMING ================= */}
-
-    {upcomingClasses.length === 0 &&
-      upcomingTasks.length === 0 && (
-        <div className="recent-empty">
           <span>
-            Nothing upcoming
+            {getRelativeDateLabel(
+              item.date,
+              now,
+            )}{" "}
+            ·{" "}
+            {formatTime(
+              item.startTime,
+            )}{" "}
+            -{" "}
+            {formatTime(
+              item.endTime,
+            )}
           </span>
 
           <small>
-            Your upcoming classes and
-            tasks will appear here.
+            {item.subject} ·{" "}
+            {item.location}
           </small>
         </div>
-      )}
+      </div>
+    ),
+  )}
 
-  </div>
+  {/* ================= UPCOMING TASKS ================= */}
+
+  {upcomingTasks.map(
+    (task, index) => (
+      <div
+        className="activity"
+        key={`task-${task.id}`}
+      >
+        <div
+          className={`activity-dot ${
+            index % 4 === 0
+              ? "orange"
+              : index % 4 === 1
+                ? "purple"
+                : index % 4 === 2
+                  ? "blue"
+                  : "green"
+          }`}
+        />
+
+        <div>
+          <strong>
+            {task.title}
+          </strong>
+
+          <span>
+            Task · {task.dueDate}
+            {task.dueTime
+              ? ` · ${task.dueTime}`
+              : ""}
+          </span>
+
+          {task.description && (
+            <small>
+              {task.description}
+            </small>
+          )}
+
+          <button
+            type="button"
+            className="task-complete-button"
+            onClick={() =>
+              completeTask(task.id)
+            }
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    ),
+  )}
+
+  {/* ================= NOTHING UPCOMING ================= */}
+
+  {upcomingClasses.length === 0 &&
+    upcomingTasks.length === 0 && (
+      <div className="recent-empty">
+        <span>
+          Nothing upcoming
+        </span>
+
+        <small>
+          Your upcoming classes and tasks
+          will appear here.
+        </small>
+      </div>
+    )}
+
+</div>
 </div>
       </section>
 
