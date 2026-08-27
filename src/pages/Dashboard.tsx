@@ -1,5 +1,12 @@
-import { useMemo } from "react";
-import { useApp } from "../AppContext";
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useApp,
+  type Task,
+} from "../AppContext";
 
 interface DashboardStudent {
   id: number;
@@ -162,9 +169,16 @@ export default function Dashboard() {
   const {
     classes,
     activities,
+    tasks,
+    completeTask,
   } = useApp();
 
   const now = new Date();
+
+  const [
+  selectedTask,
+  setSelectedTask,
+] = useState<Task | null>(null);
 
   /*
    * --------------------------------------------------
@@ -382,7 +396,45 @@ export default function Dashboard() {
         endTime: string;
         date: Date;
       }[] = [];
+      const upcomingTasks =
+  useMemo(() => {
+    return tasks
+      .filter((task) => {
+        if (task.completed) {
+          return false;
+        }
 
+        const date = new Date(
+          `${task.dueDate}T${
+            task.dueTime || "23:59"
+          }`,
+        );
+
+        return (
+          date.getTime() >=
+          now.getTime()
+        );
+      })
+      .sort((a, b) => {
+        const dateA = new Date(
+          `${a.dueDate}T${
+            a.dueTime || "23:59"
+          }`,
+        ).getTime();
+
+        const dateB = new Date(
+          `${b.dueDate}T${
+            b.dueTime || "23:59"
+          }`,
+        ).getTime();
+
+        return dateA - dateB;
+      })
+      .slice(0, 5);
+  }, [
+    tasks,
+    now.getTime(),
+  ]);
       classes.forEach(
         (classItem) => {
           classItem.schedule.forEach(
@@ -421,7 +473,54 @@ export default function Dashboard() {
         )
         .slice(0, 5);
     }, [classes, now.getTime()]);
+        /*
+ * --------------------------------------------------
+ * UPCOMING TASKS
+ * --------------------------------------------------
+ */
 
+const upcomingTasks = useMemo(() => {
+  const now = new Date();
+
+  const upcoming = tasks
+    .filter((task) => {
+      if (task.completed) {
+        return false;
+      }
+
+      if (!task.dueDate) {
+        return false;
+      }
+
+      const dueDateTime = task.dueTime
+        ? new Date(
+            `${task.dueDate}T${task.dueTime}`,
+          )
+        : new Date(
+            `${task.dueDate}T23:59:59`,
+          );
+
+      return dueDateTime.getTime() >= now.getTime();
+    })
+    .sort((a, b) => {
+      const aDate = new Date(
+        `${a.dueDate}T${
+          a.dueTime || "23:59"
+        }`,
+      ).getTime();
+
+      const bDate = new Date(
+        `${b.dueDate}T${
+          b.dueTime || "23:59"
+        }`,
+      ).getTime();
+
+      return aDate - bDate;
+    })
+    .slice(0, 5);
+
+  return upcoming;
+}, [tasks]);
   return (
     <div className="page">
       {/* =====================================================
@@ -596,81 +695,283 @@ export default function Dashboard() {
         {/* ================= UPCOMING ================= */}
 
         <div className="panel">
-          <div className="panel-header">
-            <div>
-              <h3>Upcoming</h3>
+  <div className="panel-header">
+    <div>
+      <h3>Upcoming</h3>
 
-              <span>
-                Next scheduled classes
-              </span>
-            </div>
-          </div>
+      <span>
+        Next classes and tasks
+      </span>
+    </div>
+  </div>
 
-          <div className="activity-list">
-            {upcomingClasses.length >
-            0 ? (
-              upcomingClasses.map(
-                (item, index) => (
-                  <div
-                    className="activity"
-                    key={`${item.classId}-${item.date.getTime()}-${index}`}
-                  >
-                    <div
-                      className={`activity-dot ${
-                        index % 4 === 0
-                          ? "purple"
-                          : index % 4 === 1
-                            ? "blue"
-                            : index % 4 ===
-                                2
-                              ? "green"
-                              : "orange"
-                      }`}
-                    />
+  <div className="activity-list">
 
-                    <div>
-                      <strong>
-                        {item.className}
-                      </strong>
+    {/* ================= UPCOMING CLASSES ================= */}
 
-                      <span>
-                        {getRelativeDateLabel(
-                          item.date,
-                          now,
-                        )}{" "}
-                        ·{" "}
-                        {formatTime(
-                          item.startTime,
-                        )}{" "}
-                        -{" "}
-                        {formatTime(
-                          item.endTime,
-                        )}
-                      </span>
+    {upcomingClasses.map(
+      (item, index) => (
+        <div
+          className="activity"
+          key={`class-${item.classId}-${item.date.getTime()}-${index}`}
+        >
+          <div
+            className={`activity-dot ${
+              index % 4 === 0
+                ? "purple"
+                : index % 4 === 1
+                  ? "blue"
+                  : index % 4 === 2
+                    ? "green"
+                    : "orange"
+            }`}
+          />
 
-                      <small>
-                        {item.subject} ·{" "}
-                        {item.location}
-                      </small>
-                    </div>
-                  </div>
-                ),
-              )
-            ) : (
-              <div className="recent-empty">
-                <span>
-                  No upcoming classes
-                </span>
+          <div>
+            <strong>
+              {item.className}
+            </strong>
 
-                <small>
-                  Add a schedule to your
-                  classes to see them here.
-                </small>
-              </div>
-            )}
+            <span>
+              Class ·{" "}
+              {getRelativeDateLabel(
+                item.date,
+                now,
+              )}{" "}
+              ·{" "}
+              {formatTime(
+                item.startTime,
+              )}{" "}
+              -{" "}
+              {formatTime(
+                item.endTime,
+              )}
+            </span>
+
+            <small>
+              {item.subject} ·{" "}
+              {item.location}
+            </small>
           </div>
         </div>
+      ),
+    )}
+
+    {/* ================= UPCOMING TASKS ================= */}
+
+    {upcomingTasks.map(
+      (task, index) => (
+        <div
+          className="activity"
+          key={`task-${task.id}`}
+        >
+          <div
+            className={`activity-dot ${
+              index % 4 === 0
+                ? "orange"
+                : index % 4 === 1
+                  ? "purple"
+                  : index % 4 === 2
+                    ? "blue"
+                    : "green"
+            }`}
+          />
+
+          <div>
+            <strong>
+              {task.title}
+            </strong>
+
+            <span>
+              Task · {task.dueDate}
+              {task.dueTime
+                ? ` · ${task.dueTime}`
+                : ""}
+            </span>
+
+            <small>
+              {task.description}
+            </small>
+
+            <button
+              type="button"
+              className="task-complete-button"
+              onClick={() =>
+                completeTask(task.id)
+              }
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ),
+    )}
+
+    {/* ================= NOTHING UPCOMING ================= */}
+
+    {upcomingClasses.length === 0 &&
+      upcomingTasks.length === 0 && (
+        <div className="recent-empty">
+          <span>
+            Nothing upcoming
+          </span>
+
+          <small>
+            Your upcoming classes and
+            tasks will appear here.
+          </small>
+        </div>
+      )}
+
+  </div>
+</div>
       </section>
+
+
+{selectedTask && (
+  <div
+    className="task-modal-backdrop"
+    onMouseDown={() =>
+      setSelectedTask(null)
+    }
+  >
+    <div
+      className="task-modal"
+      onMouseDown={(event) =>
+        event.stopPropagation()
+      }
+    >
+      <div className="task-modal-header">
+        <div>
+          <span className="task-modal-label">
+            TASK DETAILS
+          </span>
+
+          <h2>
+            {selectedTask.title}
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          className="task-modal-close"
+          onClick={() =>
+            setSelectedTask(null)
+          }
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="task-modal-body">
+        <div className="task-detail-row">
+          <span>Category</span>
+
+          <strong>
+            {selectedTask.category}
+          </strong>
+        </div>
+
+        <div className="task-detail-row">
+          <span>Date</span>
+
+          <strong>
+            {formatDate(
+              new Date(
+                `${selectedTask.dueDate}T00:00:00`,
+              ),
+            )}
+          </strong>
+        </div>
+
+        {selectedTask.dueTime && (
+          <div className="task-detail-row">
+            <span>Time</span>
+
+            <strong>
+              {formatTime(
+                selectedTask.dueTime,
+              )}
+            </strong>
+          </div>
+        )}
+
+        {selectedTask.description && (
+          <div className="task-detail-description">
+            <span>
+              Description
+            </span>
+
+            <p>
+              {
+                selectedTask.description
+              }
+            </p>
+          </div>
+        )}
+
+        {selectedTask.tags &&
+          selectedTask.tags.length >
+            0 && (
+            <div className="task-detail-tags">
+              <span>
+                Tags
+              </span>
+
+              <div>
+                {selectedTask.tags.map(
+                  (tag) => (
+                    <span
+                      key={tag}
+                      className="task-tag"
+                    >
+                      #{tag}
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
+      </div>
+
+      <div className="task-modal-footer">
+        <button
+          type="button"
+          className="task-delete-button"
+          onClick={() => {
+            const confirmed =
+              window.confirm(
+                "Are you sure you want to delete this task?",
+              );
+
+            if (!confirmed) {
+              return;
+            }
+
+            deleteTask(
+              selectedTask.id,
+            );
+
+            setSelectedTask(null);
+          }}
+        >
+          Delete
+        </button>
+
+        <button
+          type="button"
+          className="task-cancel-button"
+          onClick={() =>
+            setSelectedTask(null)
+          }
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
       {/* =====================================================
           RECENT ACTIVITY

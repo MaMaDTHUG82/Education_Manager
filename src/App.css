@@ -3422,3 +3422,15 @@
     0.12
   );
 }
+
+.upcoming-clickable {
+  width: 100%;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.upcoming-clickable:hover {
+  opacity: 0.85;
+}
