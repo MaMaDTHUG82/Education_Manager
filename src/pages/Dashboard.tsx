@@ -178,61 +178,61 @@ export default function Dashboard() {
   const now = new Date();
 
   const [
-  selectedTask,
-  setSelectedTask,
-] = useState<Task | null>(null);
+    selectedTask,
+    setSelectedTask,
+  ] = useState<Task | null>(null);
 
-const [showCreateTask, setShowCreateTask] =
-  useState(false);
+  const [showCreateTask, setShowCreateTask] =
+    useState(false);
 
-const [taskTitle, setTaskTitle] =
-  useState("");
+  const [taskTitle, setTaskTitle] =
+    useState("");
 
-const [taskDescription, setTaskDescription] =
-  useState("");
+  const [taskDescription, setTaskDescription] =
+    useState("");
 
-const [taskDueDate, setTaskDueDate] =
-  useState("");
+  const [taskDueDate, setTaskDueDate] =
+    useState("");
 
-const [taskDueTime, setTaskDueTime] =
-  useState("");
+  const [taskDueTime, setTaskDueTime] =
+    useState("");
 
-const [taskCategory, setTaskCategory] =
-  useState<TaskCategory>("other");
+  const [taskCategory, setTaskCategory] =
+    useState<TaskCategory>("other");
 
-const [taskPriority, setTaskPriority] =
-  useState<TaskPriority>("normal");
+  const [taskPriority, setTaskPriority] =
+    useState<TaskPriority>("normal");
 
   const handleCreateTask = () => {
-  if (!taskTitle.trim()) {
-    return;
-  }
+    if (!taskTitle.trim()) {
+      return;
+    }
 
-  if (!taskDueDate) {
-    return;
-  }
+    if (!taskDueDate) {
+      return;
+    }
 
-  addTask({
-    title: taskTitle.trim(),
-    description: taskDescription.trim(),
-    dueDate: taskDueDate,
-    dueTime: taskDueTime,
-    category: taskCategory,
-    priority: taskPriority,
-    classId: undefined,
-    studentId: undefined,
-    tags: [],
-  });
+    addTask({
+      title: taskTitle.trim(),
+      description: taskDescription.trim(),
+      dueDate: taskDueDate,
+      dueTime: taskDueTime,
+      category: taskCategory,
+      priority: taskPriority,
+      classId: undefined,
+      studentId: undefined,
+      tags: [],
+    });
 
-  setTaskTitle("");
-  setTaskDescription("");
-  setTaskDueDate("");
-  setTaskDueTime("");
- setTaskCategory("other");
-setTaskPriority("normal");
+    setTaskTitle("");
+    setTaskDescription("");
+    setTaskDueDate("");
+    setTaskDueTime("");
+    setTaskCategory("other");
+    setTaskPriority("normal");
 
-  setShowCreateTask(false);
-};
+    setShowCreateTask(false);
+  };
 
   /*
    * --------------------------------------------------
@@ -304,8 +304,8 @@ setTaskPriority("normal");
     const percentage =
       total > 0
         ? Math.round(
-            (present / total) * 100,
-          )
+          (present / total) * 100,
+        )
         : null;
 
     return {
@@ -432,125 +432,123 @@ setTaskPriority("normal");
     now.getFullYear(),
     now.getMonth(),
   ]);
-/*
- * --------------------------------------------------
- * UPCOMING CLASSES
- * --------------------------------------------------
- */
+  /*
+   * --------------------------------------------------
+   * UPCOMING CLASSES
+   * --------------------------------------------------
+   */
 
-const upcomingClasses = useMemo(() => {
-  const upcoming: {
-    classId: number;
-    className: string;
-    subject: string;
-    location: string;
-    startTime: string;
-    endTime: string;
-    date: Date;
-  }[] = [];
+  const upcomingClasses = useMemo(() => {
+    const upcoming: {
+      classId: number;
+      className: string;
+      subject: string;
+      location: string;
+      startTime: string;
+      endTime: string;
+      date: Date;
+    }[] = [];
 
-  classes.forEach((classItem) => {
-    classItem.schedule.forEach((schedule) => {
-      const nextDate = getNextClassDate(
-        schedule.day,
-        schedule.startTime,
-        now,
-      );
+    classes.forEach((classItem) => {
+      classItem.schedule.forEach((schedule) => {
+        const nextDate = getNextClassDate(
+          schedule.day,
+          schedule.startTime,
+          now,
+        );
 
-      upcoming.push({
-        classId: classItem.id,
-        className: classItem.name,
-        subject: classItem.subject,
-        location: classItem.location,
-        startTime: schedule.startTime,
-        endTime: schedule.endTime,
-        date: nextDate,
+        upcoming.push({
+          classId: classItem.id,
+          className: classItem.name,
+          subject: classItem.subject,
+          location: classItem.location,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          date: nextDate,
+        });
       });
     });
-  });
 
-  return upcoming
-    .sort(
-      (a, b) =>
-        a.date.getTime() -
-        b.date.getTime(),
-    )
-    .slice(0, 5);
-}, [classes, now.getTime()]);
+    return upcoming
+      .sort(
+        (a, b) =>
+          a.date.getTime() -
+          b.date.getTime(),
+      )
+      .slice(0, 5);
+  }, [classes, now.getTime()]);
 
 
-/*
- * --------------------------------------------------
- * UPCOMING TASKS
- * --------------------------------------------------
- */
+  /*
+   * --------------------------------------------------
+   * UPCOMING TASKS
+   * --------------------------------------------------
+   */
 
-const upcomingTasks = useMemo(() => {
-  const now = new Date();
+  const upcomingTasks = useMemo(() => {
+    const now = new Date();
 
-  const upcoming = tasks
-    .filter((task) => {
-      if (task.completed) {
-        return false;
-      }
+    const upcoming = tasks
+      .filter((task) => {
+        if (task.completed) {
+          return false;
+        }
 
-      if (!task.dueDate) {
-        return false;
-      }
+        if (!task.dueDate) {
+          return false;
+        }
 
-      const dueDateTime = task.dueTime
-        ? new Date(
+        const dueDateTime = task.dueTime
+          ? new Date(
             `${task.dueDate}T${task.dueTime}`,
           )
-        : new Date(
+          : new Date(
             `${task.dueDate}T23:59:59`,
           );
 
-      return dueDateTime.getTime() >= now.getTime();
-    })
-    .sort((a, b) => {
-      const aDate = new Date(
-        `${a.dueDate}T${
-          a.dueTime || "23:59"
-        }`,
-      ).getTime();
+        return dueDateTime.getTime() >= now.getTime();
+      })
+      .sort((a, b) => {
+        const aDate = new Date(
+          `${a.dueDate}T${a.dueTime || "23:59"
+          }`,
+        ).getTime();
 
-      const bDate = new Date(
-        `${b.dueDate}T${
-          b.dueTime || "23:59"
-        }`,
-      ).getTime();
+        const bDate = new Date(
+          `${b.dueDate}T${b.dueTime || "23:59"
+          }`,
+        ).getTime();
 
-      return aDate - bDate;
-    })
-    .slice(0, 5);
+        return aDate - bDate;
+      })
+      .slice(0, 5);
 
-  return upcoming;
-  return tasks
-    .filter((task) => {
-      if (task.completed) {
-        return false;
-      }
+    return upcoming;
+    return tasks
+      .filter((task) => {
+        if (task.completed) {
+          return false;
+        }
 
-      const date = new Date(
-        `${task.dueDate}T${task.dueTime || "23:59"}`,
-      );
+        const date = new Date(
+          `${task.dueDate}T${task.dueTime || "23:59"}`,
+        );
 
-      return date.getTime() >= now.getTime();
-    })
-    .sort((a, b) => {
-      const dateA = new Date(
-        `${a.dueDate}T${a.dueTime || "23:59"}`,
-      ).getTime();
+        return date.getTime() >= now.getTime();
+      })
+      .sort((a, b) => {
+        const dateA = new Date(
+          `${a.dueDate}T${a.dueTime || "23:59"}`,
+        ).getTime();
 
-      const dateB = new Date(
-        `${b.dueDate}T${b.dueTime || "23:59"}`,
-      ).getTime();
+        const dateB = new Date(
+          `${b.dueDate}T${b.dueTime || "23:59"}`,
+        ).getTime();
 
-      return dateA - dateB;
-    })
-    .slice(0, 5);
-}, [tasks, now.getTime()]);
+        return dateA - dateB;
+      })
+      .slice(0, 5);
+  }, [tasks, now.getTime()]);
 
   return (
     <div className="page">
@@ -559,40 +557,40 @@ const upcomingTasks = useMemo(() => {
           ===================================================== */}
 
       <header className="page-header">
-  <div>
-    <p className="eyebrow">
-      OVERVIEW
-    </p>
+        <div>
+          <p className="eyebrow">
+            OVERVIEW
+          </p>
 
-    <h2>Dashboard</h2>
+          <h2>Dashboard</h2>
 
-    <p className="page-description">
-      Welcome back. Here is an overview of your education workspace.
-    </p>
-  </div>
+          <p className="page-description">
+            Welcome back. Here is an overview of your education workspace.
+          </p>
+        </div>
 
-  <div className="dashboard-header-actions">
+        <div className="dashboard-header-actions">
 
-    <button
-      type="button"
-      className="create-task-button"
-      onClick={() => {
-  setShowCreateTask(true);
-}}
-    >
-      + Create Task
-    </button>
+          <button
+            type="button"
+            className="create-task-button"
+            onClick={() => {
+              setShowCreateTask(true);
+            }}
+          >
+            + Create Task
+          </button>
 
-    <div className="date-card">
-      <span>Today</span>
+          <div className="date-card">
+            <span>Today</span>
 
-      <strong>
-        {formatDate(now)}
-      </strong>
-    </div>
+            <strong>
+              {formatDate(now)}
+            </strong>
+          </div>
 
-  </div>
-</header>
+        </div>
+      </header>
 
       {/* =====================================================
           STATISTICS
@@ -637,7 +635,7 @@ const upcomingTasks = useMemo(() => {
 
             <strong>
               {attendanceStats.percentage !==
-              null
+                null
                 ? `${attendanceStats.percentage}%`
                 : "—"}
             </strong>
@@ -674,7 +672,7 @@ const upcomingTasks = useMemo(() => {
               <span>
                 {
                   MONTH_NAMES[
-                    now.getMonth()
+                  now.getMonth()
                   ]
                 }{" "}
                 {now.getFullYear()}
@@ -715,16 +713,15 @@ const upcomingTasks = useMemo(() => {
 
                   const isToday =
                     day ===
-                      now.getDate();
+                    now.getDate();
 
                   return (
                     <div
                       key={day}
-                      className={`calendar-day ${
-                        isToday
-                          ? "today"
-                          : ""
-                      }`}
+                      className={`calendar-day ${isToday
+                        ? "today"
+                        : ""
+                        }`}
                     >
                       {day}
                     </div>
@@ -738,490 +735,704 @@ const upcomingTasks = useMemo(() => {
         {/* ================= UPCOMING ================= */}
 
         <div className="panel">
-  <div className="panel-header">
-    <div>
-      <h3>Upcoming</h3>
+          <div className="panel-header">
+            <div>
+              <h3>Upcoming</h3>
 
-      <span>
-        Next scheduled classes and tasks
-      </span>
-    </div>
-  </div>
+              <span>
+                Next scheduled classes and tasks
+              </span>
+            </div>
+          </div>
 
-  <div className="activity-list">
+          <div className="activity-list">
 
-  {/* ================= UPCOMING CLASSES ================= */}
+            {/* ================= UPCOMING CLASSES ================= */}
 
-  {upcomingClasses.map(
-    (item, index) => (
-      <div
-        className="activity"
-        key={`class-${item.classId}-${item.date.getTime()}-${index}`}
-      >
-        <div
-          className={`activity-dot ${
-            index % 4 === 0
-              ? "purple"
-              : index % 4 === 1
-                ? "blue"
-                : index % 4 === 2
-                  ? "green"
-                  : "orange"
-          }`}
-        />
+            {upcomingClasses.map(
+              (item, index) => (
+                <div
+                  className="activity"
+                  key={`class-${item.classId}-${item.date.getTime()}-${index}`}
+                >
+                  <div
+                    className={`activity-dot ${index % 4 === 0
+                      ? "purple"
+                      : index % 4 === 1
+                        ? "blue"
+                        : index % 4 === 2
+                          ? "green"
+                          : "orange"
+                      }`}
+                  />
 
-        <div>
-          <strong>
-            {item.className}
-          </strong>
+                  <div>
+                    <strong>
+                      {item.className}
+                    </strong>
 
-          <span>
-            {getRelativeDateLabel(
-              item.date,
-              now,
-            )}{" "}
-            ·{" "}
-            {formatTime(
-              item.startTime,
-            )}{" "}
-            -{" "}
-            {formatTime(
-              item.endTime,
+                    <span>
+                      {getRelativeDateLabel(
+                        item.date,
+                        now,
+                      )}{" "}
+                      ·{" "}
+                      {formatTime(
+                        item.startTime,
+                      )}{" "}
+                      -{" "}
+                      {formatTime(
+                        item.endTime,
+                      )}
+                    </span>
+
+                    <small>
+                      {item.subject} ·{" "}
+                      {item.location}
+                    </small>
+                  </div>
+                </div>
+              ),
             )}
-          </span>
 
-          <small>
-            {item.subject} ·{" "}
-            {item.location}
-          </small>
+            {/* ================= UPCOMING TASKS ================= */}
+
+            {upcomingTasks.map(
+              (task, index) => (
+                <div
+                  className="activity"
+                  key={`task-${task.id}`}
+                >
+                  <div
+                    className={`activity-dot ${index % 4 === 0
+                      ? "orange"
+                      : index % 4 === 1
+                        ? "purple"
+                        : index % 4 === 2
+                          ? "blue"
+                          : "green"
+                      }`}
+                  />
+
+                  <div>
+                    <strong>
+                      {task.title}
+                    </strong>
+
+                    <span>
+                      Task · {task.dueDate}
+                      {task.dueTime
+                        ? ` · ${task.dueTime}`
+                        : ""}
+                    </span>
+
+                    {task.description && (
+                      <small>
+                        {task.description}
+                      </small>
+                    )}
+
+                  {/*  <button
+                      type="button"
+                      className="task-complete-button"
+                      onClick={() =>
+                        completeTask(task.id)
+                      }
+                    >
+                      Done
+                    </button> */}
+                  </div>
+                </div>
+              ),
+            )}
+
+            {/* ================= NOTHING UPCOMING ================= */}
+
+            {upcomingClasses.length === 0 &&
+              upcomingTasks.length === 0 && (
+                <div className="recent-empty">
+                  <span>
+                    Nothing upcoming
+                  </span>
+
+                  <small>
+                    Your upcoming classes and tasks
+                    will appear here.
+                  </small>
+                </div>
+              )}
+
+          </div>
         </div>
-      </div>
-    ),
-  )}
-
-  {/* ================= UPCOMING TASKS ================= */}
-
-  {upcomingTasks.map(
-    (task, index) => (
-      <div
-        className="activity"
-        key={`task-${task.id}`}
-      >
-        <div
-          className={`activity-dot ${
-            index % 4 === 0
-              ? "orange"
-              : index % 4 === 1
-                ? "purple"
-                : index % 4 === 2
-                  ? "blue"
-                  : "green"
-          }`}
-        />
-
-        <div>
-          <strong>
-            {task.title}
-          </strong>
-
-          <span>
-            Task · {task.dueDate}
-            {task.dueTime
-              ? ` · ${task.dueTime}`
-              : ""}
-          </span>
-
-          {task.description && (
-            <small>
-              {task.description}
-            </small>
-          )}
-
-          <button
-            type="button"
-            className="task-complete-button"
-            onClick={() =>
-              completeTask(task.id)
-            }
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    ),
-  )}
-
-  {/* ================= NOTHING UPCOMING ================= */}
-
-  {upcomingClasses.length === 0 &&
-    upcomingTasks.length === 0 && (
-      <div className="recent-empty">
-        <span>
-          Nothing upcoming
-        </span>
-
-        <small>
-          Your upcoming classes and tasks
-          will appear here.
-        </small>
-      </div>
-    )}
-
-</div>
-</div>
       </section>
 
 
-{selectedTask && (
-  <div
-    className="task-modal-backdrop"
-    onMouseDown={() =>
-      setSelectedTask(null)
-    }
-  >
-    <div
-      className="task-modal"
-      onMouseDown={(event) =>
-        event.stopPropagation()
-      }
-    >
-      <div className="task-modal-header">
-        <div>
-          <span className="task-modal-label">
-            TASK DETAILS
-          </span>
-
-          <h2>
-            {selectedTask.title}
-          </h2>
-        </div>
-
-        <button
-          type="button"
-          className="task-modal-close"
-          onClick={() =>
+      {selectedTask && (
+        <div
+          className="task-modal-backdrop"
+          onMouseDown={() =>
             setSelectedTask(null)
           }
         >
-          ×
-        </button>
-      </div>
-
-      <div className="task-modal-body">
-        <div className="task-detail-row">
-          <span>Category</span>
-
-          <strong>
-            {selectedTask.category}
-          </strong>
-        </div>
-
-        <div className="task-detail-row">
-          <span>Date</span>
-
-          <strong>
-            {formatDate(
-              new Date(
-                `${selectedTask.dueDate}T00:00:00`,
-              ),
-            )}
-          </strong>
-        </div>
-
-        {selectedTask.dueTime && (
-          <div className="task-detail-row">
-            <span>Time</span>
-
-            <strong>
-              {formatTime(
-                selectedTask.dueTime,
-              )}
-            </strong>
-          </div>
-        )}
-
-        {selectedTask.description && (
-          <div className="task-detail-description">
-            <span>
-              Description
-            </span>
-
-            <p>
-              {
-                selectedTask.description
-              }
-            </p>
-          </div>
-        )}
-
-        {selectedTask.tags &&
-          selectedTask.tags.length >
-            0 && (
-            <div className="task-detail-tags">
-              <span>
-                Tags
-              </span>
-
+          <div
+            className="task-modal"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <div className="task-modal-header">
               <div>
-                {selectedTask.tags.map(
-                  (tag) => (
-                    <span
-                      key={tag}
-                      className="task-tag"
-                    >
-                      #{tag}
+                <span className="task-modal-label">
+                  TASK DETAILS
+                </span>
+
+                <h2>
+                  {selectedTask.title}
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                className="task-modal-close"
+                onClick={() =>
+                  setSelectedTask(null)
+                }
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="task-modal-body">
+              <div className="task-detail-row">
+                <span>Category</span>
+
+                <strong>
+                  {selectedTask.category}
+                </strong>
+              </div>
+
+              <div className="task-detail-row">
+                <span>Date</span>
+
+                <strong>
+                  {formatDate(
+                    new Date(
+                      `${selectedTask.dueDate}T00:00:00`,
+                    ),
+                  )}
+                </strong>
+              </div>
+
+              {selectedTask.dueTime && (
+                <div className="task-detail-row">
+                  <span>Time</span>
+
+                  <strong>
+                    {formatTime(
+                      selectedTask.dueTime,
+                    )}
+                  </strong>
+                </div>
+              )}
+
+              {selectedTask.description && (
+                <div className="task-detail-description">
+                  <span>
+                    Description
+                  </span>
+
+                  <p>
+                    {
+                      selectedTask.description
+                    }
+                  </p>
+                </div>
+              )}
+
+              {selectedTask.tags &&
+                selectedTask.tags.length >
+                0 && (
+                  <div className="task-detail-tags">
+                    <span>
+                      Tags
                     </span>
-                  ),
+
+                    <div>
+                      {selectedTask.tags.map(
+                        (tag) => (
+                          <span
+                            key={tag}
+                            className="task-tag"
+                          >
+                            #{tag}
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  </div>
                 )}
+            </div>
+
+            <div className="task-modal-footer">
+              <button
+                type="button"
+                className="task-delete-button"
+                onClick={() => {
+                  const confirmed =
+                    window.confirm(
+                      "Are you sure you want to delete this task?",
+                    );
+
+                  if (!confirmed) {
+                    return;
+                  }
+
+                  deleteTask(
+                    selectedTask.id,
+                  );
+
+                  setSelectedTask(null);
+                }}
+              >
+                Delete
+              </button>
+
+              <button
+                type="button"
+                className="task-cancel-button"
+                onClick={() =>
+                  setSelectedTask(null)
+                }
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+
+          {showCreateTask && (
+            <div
+              className="task-modal-overlay"
+              onMouseDown={(event) => {
+                if (
+                  event.target === event.currentTarget
+                ) {
+                  setShowCreateTask(false);
+                }
+              }}
+            >
+              <div className="task-modal">
+
+                <div className="task-modal-header">
+                  <div>
+                    <span className="eyebrow">
+                      TASK
+                    </span>
+
+                    <h3>Create Task</h3>
+
+                    <p>
+                      Add a reminder for yourself.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="task-modal-close"
+                    onClick={() =>
+                      setShowCreateTask(false)
+                    }
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="task-form">
+
+                  <label>
+                    Title
+
+                    <input
+                      type="text"
+                      value={taskTitle}
+                      onChange={(event) =>
+                        setTaskTitle(event.target.value)
+                      }
+                      placeholder="e.g. Prepare English exam"
+                      autoFocus
+                    />
+                  </label>
+
+                  <label>
+                    Description
+
+                    <textarea
+                      value={taskDescription}
+                      onChange={(event) =>
+                        setTaskDescription(
+                          event.target.value,
+                        )
+                      }
+                      placeholder="What needs to be done?"
+                      rows={4}
+                    />
+                  </label>
+
+                  <div className="task-form-row">
+
+                    <label>
+                      Due date
+
+                      <input
+                        type="date"
+                        value={taskDueDate}
+                        onChange={(event) =>
+                          setTaskDueDate(
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </label>
+
+                    <label>
+                      Due time
+
+                      <input
+                        type="time"
+                        value={taskDueTime}
+                        onChange={(event) =>
+                          setTaskDueTime(
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </label>
+
+                  </div>
+
+                  <div className="task-form-row">
+
+                    <label>
+                      Category
+
+                      <select
+                        value={taskCategory}
+                        onChange={(event) =>
+                          setTaskCategory(
+                            event.target.value as TaskCategory,
+                          )
+                        }
+                      >
+                        <option value="lesson">
+                          Lesson
+                        </option>
+
+                        <option value="exam">
+                          Exam
+                        </option>
+
+                        <option value="grading">
+                          Grading
+                        </option>
+
+                        <option value="student">
+                          Student
+                        </option>
+
+                        <option value="class">
+                          Class
+                        </option>
+
+                        <option value="assignment">
+                          Assignment
+                        </option>
+
+                        <option value="other">
+                          Other
+                        </option>
+                      </select>
+                    </label>
+
+                    <label>
+                      Priority
+
+                      <select
+                        value={taskPriority}
+                        onChange={(event) =>
+                          setTaskPriority(
+                            event.target.value as TaskPriority,
+                          )
+                        }
+                      >
+                        <option value="low">
+                          Low
+                        </option>
+
+                        <option value="normal">
+                          Normal
+                        </option>
+
+                        <option value="high">
+                          High
+                        </option>
+
+                        <option value="urgent">
+                          Urgent
+                        </option>
+                      </select>
+                    </label>
+
+                  </div>
+
+                </div>
+
+                <div className="task-modal-footer">
+
+                  <button
+                    type="button"
+                    className="task-cancel-button"
+                    onClick={() =>
+                      setShowCreateTask(false)
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    className="task-save-button"
+                    onClick={handleCreateTask}
+                    disabled={
+                      !taskTitle.trim() ||
+                      !taskDueDate
+                    }
+                  >
+                    Create Task
+                  </button>
+
+                </div>
+
               </div>
             </div>
           )}
-      </div>
+        </div>
+      )}
 
-      <div className="task-modal-footer">
-        <button
-          type="button"
-          className="task-delete-button"
-          onClick={() => {
-            const confirmed =
-              window.confirm(
-                "Are you sure you want to delete this task?",
-              );
-
-            if (!confirmed) {
-              return;
+      {showCreateTask && (
+        <div
+          className="task-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowCreateTask(false);
             }
-
-            deleteTask(
-              selectedTask.id,
-            );
-
-            setSelectedTask(null);
           }}
         >
-          Delete
-        </button>
+          <div
+            className="task-modal"
+            onMouseDown={(event) => {
+              event.stopPropagation();
+            }}
+          >
+            <div className="task-modal-header">
+              <div>
+                <span className="task-modal-label">
+                  CREATE TASK
+                </span>
 
-        <button
-          type="button"
-          className="task-cancel-button"
-          onClick={() =>
-            setSelectedTask(null)
-          }
-        >
-          Close
-        </button>
-      </div>
-    </div>
+                <h2>
+                  New Task
+                </h2>
+              </div>
 
+              <button
+                type="button"
+                className="task-modal-close"
+                onClick={() => {
+                  setShowCreateTask(false);
+                }}
+              >
+                ×
+              </button>
+            </div>
 
-    {showCreateTask && (
-  <div
-    className="task-modal-overlay"
-    onMouseDown={(event) => {
-      if (
-        event.target === event.currentTarget
-      ) {
-        setShowCreateTask(false);
-      }
-    }}
-  >
-    <div className="task-modal">
+            <div className="task-modal-body">
 
-      <div className="task-modal-header">
-        <div>
-          <span className="eyebrow">
-            TASK
-          </span>
+              <div className="task-form-group">
+                <label>
+                  Title
+                </label>
 
-          <h3>Create Task</h3>
+                <input
+                  type="text"
+                  value={taskTitle}
+                  onChange={(event) =>
+                    setTaskTitle(event.target.value)
+                  }
+                  placeholder="What needs to be done?"
+                />
+              </div>
 
-          <p>
-            Add a reminder for yourself.
-          </p>
+              <div className="task-form-group">
+                <label>
+                  Description
+                </label>
+
+                <textarea
+                  value={taskDescription}
+                  onChange={(event) =>
+                    setTaskDescription(
+                      event.target.value,
+                    )
+                  }
+                  placeholder="Add some details..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="task-form-row">
+
+                <div className="task-form-group">
+                  <label>
+                    Due date
+                  </label>
+
+                  <input
+                    type="date"
+                    value={taskDueDate}
+                    onChange={(event) =>
+                      setTaskDueDate(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="task-form-group">
+                  <label>
+                    Due time
+                  </label>
+
+                  <input
+                    type="time"
+                    value={taskDueTime}
+                    onChange={(event) =>
+                      setTaskDueTime(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </div>
+
+              </div>
+
+              <div className="task-form-row">
+
+                <div className="task-form-group">
+                  <label>
+                    Category
+                  </label>
+
+                  <select
+                    value={taskCategory}
+                    onChange={(event) =>
+                      setTaskCategory(
+                        event.target.value as TaskCategory,
+                      )
+                    }
+                  >
+                    <option value="lesson">
+                      Lesson
+                    </option>
+
+                    <option value="exam">
+                      Exam
+                    </option>
+
+                    <option value="grading">
+                      Grading
+                    </option>
+
+                    <option value="student">
+                      Student
+                    </option>
+
+                    <option value="class">
+                      Class
+                    </option>
+
+                    <option value="assignment">
+                      Assignment
+                    </option>
+
+                    <option value="other">
+                      Other
+                    </option>
+                  </select>
+                </div>
+
+                <div className="task-form-group">
+                  <label>
+                    Priority
+                  </label>
+
+                  <select
+                    value={taskPriority}
+                    onChange={(event) =>
+                      setTaskPriority(
+                        event.target.value as TaskPriority,
+                      )
+                    }
+                  >
+                    <option value="low">
+                      Low
+                    </option>
+
+                    <option value="normal">
+                      Normal
+                    </option>
+
+                    <option value="high">
+                      High
+                    </option>
+
+                    <option value="urgent">
+                      Urgent
+                    </option>
+                  </select>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="task-modal-footer">
+
+              <button
+                type="button"
+                className="task-cancel-button"
+                onClick={() => {
+                  setShowCreateTask(false);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className="task-save-button"
+                disabled={
+                  !taskTitle.trim() ||
+                  !taskDueDate
+                }
+                onClick={handleCreateTask}
+              >
+                Create Task
+              </button>
+
+            </div>
+          </div>
         </div>
-
-        <button
-          type="button"
-          className="task-modal-close"
-          onClick={() =>
-            setShowCreateTask(false)
-          }
-        >
-          ×
-        </button>
-      </div>
-
-      <div className="task-form">
-
-        <label>
-          Title
-
-          <input
-            type="text"
-            value={taskTitle}
-            onChange={(event) =>
-              setTaskTitle(event.target.value)
-            }
-            placeholder="e.g. Prepare English exam"
-            autoFocus
-          />
-        </label>
-
-        <label>
-          Description
-
-          <textarea
-            value={taskDescription}
-            onChange={(event) =>
-              setTaskDescription(
-                event.target.value,
-              )
-            }
-            placeholder="What needs to be done?"
-            rows={4}
-          />
-        </label>
-
-        <div className="task-form-row">
-
-          <label>
-            Due date
-
-            <input
-              type="date"
-              value={taskDueDate}
-              onChange={(event) =>
-                setTaskDueDate(
-                  event.target.value,
-                )
-              }
-            />
-          </label>
-
-          <label>
-            Due time
-
-            <input
-              type="time"
-              value={taskDueTime}
-              onChange={(event) =>
-                setTaskDueTime(
-                  event.target.value,
-                )
-              }
-            />
-          </label>
-
-        </div>
-
-        <div className="task-form-row">
-
-          <label>
-  Category
-
-  <select
-    value={taskCategory}
-    onChange={(event) =>
-      setTaskCategory(
-        event.target.value as TaskCategory,
-      )
-    }
-  >
-    <option value="lesson">
-      Lesson
-    </option>
-
-    <option value="exam">
-      Exam
-    </option>
-
-    <option value="grading">
-      Grading
-    </option>
-
-    <option value="student">
-      Student
-    </option>
-
-    <option value="class">
-      Class
-    </option>
-
-    <option value="assignment">
-      Assignment
-    </option>
-
-    <option value="other">
-      Other
-    </option>
-  </select>
-</label>
-
-          <label>
-  Priority
-
-  <select
-    value={taskPriority}
-    onChange={(event) =>
-      setTaskPriority(
-        event.target.value as TaskPriority,
-      )
-    }
-  >
-    <option value="low">
-      Low
-    </option>
-
-    <option value="normal">
-      Normal
-    </option>
-
-    <option value="high">
-      High
-    </option>
-
-    <option value="urgent">
-      Urgent
-    </option>
-  </select>
-</label>
-
-        </div>
-
-      </div>
-
-      <div className="task-modal-footer">
-
-        <button
-          type="button"
-          className="task-cancel-button"
-          onClick={() =>
-            setShowCreateTask(false)
-          }
-        >
-          Cancel
-        </button>
-
-        <button
-          type="button"
-          className="task-save-button"
-          onClick={handleCreateTask}
-          disabled={
-            !taskTitle.trim() ||
-            !taskDueDate
-          }
-        >
-          Create Task
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-)}
-  </div>
-)}
+      )}
 
 
       {/* =====================================================
@@ -1298,11 +1509,10 @@ const upcomingTasks = useMemo(() => {
                         hours / 24,
                       );
 
-                    timeText = `${days} day${
-                      days > 1
-                        ? "s"
-                        : ""
-                    } ago`;
+                    timeText = `${days} day${days > 1
+                      ? "s"
+                      : ""
+                      } ago`;
                   }
                 }
 
@@ -1346,7 +1556,7 @@ const upcomingTasks = useMemo(() => {
               </small>
             </div>
           )}
-          
+
         </div>
       </section>
     </div>
