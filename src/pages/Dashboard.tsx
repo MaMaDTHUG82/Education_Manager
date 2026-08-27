@@ -1,11 +1,10 @@
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
 import {
   useApp,
   type Task,
+  type TaskCategory,
+  type TaskPriority,
 } from "../AppContext";
 
 
@@ -199,10 +198,10 @@ const [taskDueTime, setTaskDueTime] =
   useState("");
 
 const [taskCategory, setTaskCategory] =
-  useState("General");
+  useState<TaskCategory>("other");
 
 const [taskPriority, setTaskPriority] =
-  useState("Medium");
+  useState<TaskPriority>("normal");
 
   const handleCreateTask = () => {
   if (!taskTitle.trim()) {
@@ -229,8 +228,8 @@ const [taskPriority, setTaskPriority] =
   setTaskDescription("");
   setTaskDueDate("");
   setTaskDueTime("");
-  setTaskCategory("General");
-  setTaskPriority("Medium");
+ setTaskCategory("other");
+setTaskPriority("normal");
 
   setShowCreateTask(false);
 };
@@ -1119,66 +1118,74 @@ const upcomingTasks = useMemo(() => {
         <div className="task-form-row">
 
           <label>
-            Category
+  Category
 
-            <select
-              value={taskCategory}
-              onChange={(event) =>
-                setTaskCategory(
-                  event.target.value,
-                )
-              }
-            >
-              <option value="General">
-                General
-              </option>
+  <select
+    value={taskCategory}
+    onChange={(event) =>
+      setTaskCategory(
+        event.target.value as TaskCategory,
+      )
+    }
+  >
+    <option value="lesson">
+      Lesson
+    </option>
 
-              <option value="Exam">
-                Exam
-              </option>
+    <option value="exam">
+      Exam
+    </option>
 
-              <option value="Homework">
-                Homework
-              </option>
+    <option value="grading">
+      Grading
+    </option>
 
-              <option value="Class">
-                Class
-              </option>
+    <option value="student">
+      Student
+    </option>
 
-              <option value="Student">
-                Student
-              </option>
+    <option value="class">
+      Class
+    </option>
 
-              <option value="Other">
-                Other
-              </option>
-            </select>
-          </label>
+    <option value="assignment">
+      Assignment
+    </option>
+
+    <option value="other">
+      Other
+    </option>
+  </select>
+</label>
 
           <label>
-            Priority
+  Priority
 
-            <select
-              value={taskPriority}
-              onChange={(event) =>
-                setTaskPriority(
-                  event.target.value,
-                )
-              }
-            >
-              <option value="Low">
-                Low
-              </option>
+  <select
+    value={taskPriority}
+    onChange={(event) =>
+      setTaskPriority(
+        event.target.value as TaskPriority,
+      )
+    }
+  >
+    <option value="low">
+      Low
+    </option>
 
-              <option value="Medium">
-                Medium
-              </option>
+    <option value="normal">
+      Normal
+    </option>
 
-              <option value="High">
-                High
-              </option>
-            </select>
-          </label>
+    <option value="high">
+      High
+    </option>
+
+    <option value="urgent">
+      Urgent
+    </option>
+  </select>
+</label>
 
         </div>
 
