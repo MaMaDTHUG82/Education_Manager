@@ -8,6 +8,7 @@ import {
   type Task,
 } from "../AppContext";
 
+
 interface DashboardStudent {
   id: number;
   firstName: string;
@@ -172,6 +173,7 @@ export default function Dashboard() {
     tasks,
     completeTask,
     deleteTask,
+    addTask,
   } = useApp();
 
   const now = new Date();
@@ -180,6 +182,58 @@ export default function Dashboard() {
   selectedTask,
   setSelectedTask,
 ] = useState<Task | null>(null);
+
+const [showCreateTask, setShowCreateTask] =
+  useState(false);
+
+const [taskTitle, setTaskTitle] =
+  useState("");
+
+const [taskDescription, setTaskDescription] =
+  useState("");
+
+const [taskDueDate, setTaskDueDate] =
+  useState("");
+
+const [taskDueTime, setTaskDueTime] =
+  useState("");
+
+const [taskCategory, setTaskCategory] =
+  useState("General");
+
+const [taskPriority, setTaskPriority] =
+  useState("Medium");
+
+  const handleCreateTask = () => {
+  if (!taskTitle.trim()) {
+    return;
+  }
+
+  if (!taskDueDate) {
+    return;
+  }
+
+  addTask({
+    title: taskTitle.trim(),
+    description: taskDescription.trim(),
+    dueDate: taskDueDate,
+    dueTime: taskDueTime,
+    category: taskCategory,
+    priority: taskPriority,
+    classId: undefined,
+    studentId: undefined,
+    tags: [],
+  });
+
+  setTaskTitle("");
+  setTaskDescription("");
+  setTaskDueDate("");
+  setTaskDueTime("");
+  setTaskCategory("General");
+  setTaskPriority("Medium");
+
+  setShowCreateTask(false);
+};
 
   /*
    * --------------------------------------------------
@@ -506,28 +560,40 @@ const upcomingTasks = useMemo(() => {
           ===================================================== */}
 
       <header className="page-header">
-        <div>
-          <p className="eyebrow">
-            OVERVIEW
-          </p>
+  <div>
+    <p className="eyebrow">
+      OVERVIEW
+    </p>
 
-          <h2>Dashboard</h2>
+    <h2>Dashboard</h2>
 
-          <p className="page-description">
-            Welcome back. Here is an
-            overview of your education
-            workspace.
-          </p>
-        </div>
+    <p className="page-description">
+      Welcome back. Here is an overview of your education workspace.
+    </p>
+  </div>
 
-        <div className="date-card">
-          <span>Today</span>
+  <div className="dashboard-header-actions">
 
-          <strong>
-            {formatDate(now)}
-          </strong>
-        </div>
-      </header>
+    <button
+      type="button"
+      className="create-task-button"
+      onClick={() => {
+  setShowCreateTask(true);
+}}
+    >
+      + Create Task
+    </button>
+
+    <div className="date-card">
+      <span>Today</span>
+
+      <strong>
+        {formatDate(now)}
+      </strong>
+    </div>
+
+  </div>
+</header>
 
       {/* =====================================================
           STATISTICS
@@ -948,6 +1014,205 @@ const upcomingTasks = useMemo(() => {
         </button>
       </div>
     </div>
+
+
+    {showCreateTask && (
+  <div
+    className="task-modal-overlay"
+    onMouseDown={(event) => {
+      if (
+        event.target === event.currentTarget
+      ) {
+        setShowCreateTask(false);
+      }
+    }}
+  >
+    <div className="task-modal">
+
+      <div className="task-modal-header">
+        <div>
+          <span className="eyebrow">
+            TASK
+          </span>
+
+          <h3>Create Task</h3>
+
+          <p>
+            Add a reminder for yourself.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="task-modal-close"
+          onClick={() =>
+            setShowCreateTask(false)
+          }
+        >
+          ×
+        </button>
+      </div>
+
+      <div className="task-form">
+
+        <label>
+          Title
+
+          <input
+            type="text"
+            value={taskTitle}
+            onChange={(event) =>
+              setTaskTitle(event.target.value)
+            }
+            placeholder="e.g. Prepare English exam"
+            autoFocus
+          />
+        </label>
+
+        <label>
+          Description
+
+          <textarea
+            value={taskDescription}
+            onChange={(event) =>
+              setTaskDescription(
+                event.target.value,
+              )
+            }
+            placeholder="What needs to be done?"
+            rows={4}
+          />
+        </label>
+
+        <div className="task-form-row">
+
+          <label>
+            Due date
+
+            <input
+              type="date"
+              value={taskDueDate}
+              onChange={(event) =>
+                setTaskDueDate(
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+
+          <label>
+            Due time
+
+            <input
+              type="time"
+              value={taskDueTime}
+              onChange={(event) =>
+                setTaskDueTime(
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+
+        </div>
+
+        <div className="task-form-row">
+
+          <label>
+            Category
+
+            <select
+              value={taskCategory}
+              onChange={(event) =>
+                setTaskCategory(
+                  event.target.value,
+                )
+              }
+            >
+              <option value="General">
+                General
+              </option>
+
+              <option value="Exam">
+                Exam
+              </option>
+
+              <option value="Homework">
+                Homework
+              </option>
+
+              <option value="Class">
+                Class
+              </option>
+
+              <option value="Student">
+                Student
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Priority
+
+            <select
+              value={taskPriority}
+              onChange={(event) =>
+                setTaskPriority(
+                  event.target.value,
+                )
+              }
+            >
+              <option value="Low">
+                Low
+              </option>
+
+              <option value="Medium">
+                Medium
+              </option>
+
+              <option value="High">
+                High
+              </option>
+            </select>
+          </label>
+
+        </div>
+
+      </div>
+
+      <div className="task-modal-footer">
+
+        <button
+          type="button"
+          className="task-cancel-button"
+          onClick={() =>
+            setShowCreateTask(false)
+          }
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="task-save-button"
+          onClick={handleCreateTask}
+          disabled={
+            !taskTitle.trim() ||
+            !taskDueDate
+          }
+        >
+          Create Task
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
   </div>
 )}
 
@@ -1074,6 +1339,7 @@ const upcomingTasks = useMemo(() => {
               </small>
             </div>
           )}
+          
         </div>
       </section>
     </div>
