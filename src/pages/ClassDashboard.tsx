@@ -419,7 +419,7 @@ export default function ClassDashboard({
           
           
           <button
-            className="secondary-button"
+            className="primary-button"
             onClick={
               handleOpenAttendance
             }

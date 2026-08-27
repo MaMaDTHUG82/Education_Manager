@@ -2796,25 +2796,24 @@
   }
 }
 
+
+
 .danger-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 
-  min-height: 38px;
-  padding: 0 15px;
+  height: 40px;
 
-  border: 1px solid #7f1d1d;
-  border-radius: 10px;
+  padding: 0 17px;
 
-  background: #451a1a;
-  color: #fca5a5;
+  border: 0;
+  border-radius: 8px;
 
-  font-family: inherit;
-  font-size: 10px;
+  background: #8b5cf6;
+  color: white;
+
+  font-size: 12px;
   font-weight: 600;
 
-  cursor: pointer;
+  
 
   transition:
     background 0.2s ease,

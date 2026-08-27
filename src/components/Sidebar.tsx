@@ -37,8 +37,8 @@ export default function Sidebar({
         <div className="brand-icon">E</div>
 
         <div>
-          <h1>Education</h1>
-          <span>Manager</span>
+          <h1>Education Manager</h1>
+          
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export default function Sidebar({
 
         <div className="sidebar-version">
           Education Manager
-          <span>v0.1.0</span>
+          <span>v0.1.1</span>
         </div>
       </div>
     </aside>

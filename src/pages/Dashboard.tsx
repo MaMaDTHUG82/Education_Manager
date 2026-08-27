@@ -170,7 +170,7 @@ export default function Dashboard() {
     classes,
     activities,
     tasks,
-    completeTask,
+    
     deleteTask,
     addTask,
   } = useApp();
@@ -320,53 +320,11 @@ export default function Dashboard() {
    * PENDING ASSIGNMENTS
    * --------------------------------------------------
    */
-
-  const pendingTasks = useMemo(() => {
-    const today = new Date();
-
-    today.setHours(
-      23,
-      59,
-      59,
-      999,
-    );
-
-    let count = 0;
-
-    classes.forEach((classItem) => {
-      classItem.students.forEach(
-        (student) => {
-          const typedStudent =
-            student as DashboardStudent;
-
-          const assignments =
-            typedStudent.assignments ?? [];
-
-          assignments.forEach(
-            (assignment) => {
-              if (!assignment.dueDate) {
-                return;
-              }
-
-              const dueDate =
-                new Date(
-                  `${assignment.dueDate}T23:59:59`,
-                );
-
-              if (
-                dueDate.getTime() >=
-                today.getTime()
-              ) {
-                count += 1;
-              }
-            },
-          );
-        },
-      );
-    });
-
-    return count;
-  }, [classes]);
+const pendingTasks = useMemo(() => {
+  return tasks.filter(
+    (task) => !task.completed
+  ).length;
+}, [tasks]);
 
   /*
    * --------------------------------------------------
@@ -654,7 +612,7 @@ export default function Dashboard() {
               {pendingTasks}
             </strong>
           </div>
-        </div>
+        </div> 
       </section>
 
       {/* =====================================================
