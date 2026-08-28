@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useApp } from "../AppContext";
+import { useApp } from "../../AppContext";
 
 interface Grade {
   id: number;

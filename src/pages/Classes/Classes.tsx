@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ClassDashboard from "./ClassDashboard";
-import StudentDashboard from "./StudentDashboard";
-import { useApp } from "../AppContext";
+import ClassDashboard from "../ClassDashboard/ClassDashboard";
+import StudentDashboard from "../StudentDashboard/StudentDashboard";
+import { useApp } from "../../AppContext";
 
 export interface AttendanceRecord {
   date: string;

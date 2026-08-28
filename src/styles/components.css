@@ -1,0 +1,175 @@
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.primary-button {
+  height: 40px;
+
+  padding: 0 17px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: var(--color-primary);
+  color: white;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.primary-button:hover {
+  background: var(--color-primary-hover);
+
+  box-shadow:
+    0 4px 14px rgba(139, 92, 246, 0.22);
+}
+
+.primary-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+
+.text-button {
+  border: 0;
+
+  background: transparent;
+
+  color: var(--color-primary-text);
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+
+.icon-button {
+  border: 0;
+
+  background: transparent;
+
+  color: var(--color-text-muted);
+
+  cursor: pointer;
+}
+
+
+.filter-button {
+  height: 40px;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--color-border-light);
+  border-radius: 8px;
+
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.panel {
+  overflow: hidden;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid var(--color-border-dark);
+}
+
+.panel-header h3 {
+  margin: 0;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel-header span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--color-text-subtle);
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+  min-height: 320px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+
+  border: 1px dashed var(--color-border-light);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface-soft);
+
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  border-radius: 13px;
+
+  background: var(--color-primary-light);
+  color: var(--color-primary-text);
+
+  font-size: 21px;
+}
+
+.empty-state h3 {
+  margin: 0;
+
+  font-size: 14px;
+}
+
+.empty-state p {
+  margin: 7px 0 18px;
+
+  color: var(--color-text-subtle);
+
+  font-size: 10px;
+}

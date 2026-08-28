@@ -13,13 +13,13 @@ import {
 import type {
   ClassItem,
  // Student,
-} from "./pages/Classes";
+} from "./pages/Classes/Classes";
 
 import {
   loadData,
   saveData,
   type AppData,
-} from "./storage/storage";
+} from "../src/pages/storage/storage";
 
 
 export type ActivityType =

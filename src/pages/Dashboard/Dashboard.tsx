@@ -5,7 +5,7 @@ import {
   type Task,
   type TaskCategory,
   type TaskPriority,
-} from "../AppContext";
+} from "../../AppContext";
 
 
 interface DashboardStudent {
