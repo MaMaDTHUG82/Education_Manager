@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import "../styles/dashboard.css";
+import "../Dashboard/Dashboard.css";
 import {
   useApp,
   type Task,
