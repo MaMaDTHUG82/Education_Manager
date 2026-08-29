@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import "../Dashboard/Dashboard.css";
+
 import {
   useApp,
   type Task,
   type TaskCategory,
   type TaskPriority,
-} from "../../AppContext";
+} from "../AppContext";
 
 
 interface DashboardStudent {

@@ -1,4 +1,4 @@
-import type { Page } from "/! workshop/CFuck/Teacher/Teacher_THUG/teacher-manager/Education_Manager/src/App";
+import type { Page } from "../App";
 
 interface SidebarProps {
   currentPage: Page;

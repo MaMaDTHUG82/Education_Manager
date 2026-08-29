@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useApp } from "../../AppContext";
+import { useApp } from "../AppContext";
 
 interface ClassActivity {
   id: number;

@@ -1,24 +1,18 @@
 import { useState } from "react";
 
-import "./styles/variables.css";
-import "./styles/global.css";
-import "./styles/layout.css";
-import "./styles/components.css";
-import "./styles/utilities.css";
-
 import "./App.css";
 
 import { AppProvider } from "./AppContext";
 
-import Sidebar from "./components/Sidebar/Sidebar";
+import Sidebar from "./components/Sidebar";
 
-import Dashboard from "./pages/Dashboard/Dashboard";
+import Dashboard from "./pages/Dashboard";
 
-import Classes from "./pages/Classes/Classes";
+import Classes from "./pages/Classes";
 
-import Tasks from "./pages/Tasks/Tasks" ;
+import Tasks from "./pages/Tasks" ;
 
-import Settings from "./pages/Settings/Settings";
+import Settings from "./pages/Settings";
 
 
 export type Page =

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useApp } from "../../AppContext";
-import "../../pages/ClassDashboard/ClassDashboard.css";
+import { useApp } from "../AppContext";
+
 interface Grade {
   id: number;
   examName: string;
