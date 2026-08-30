@@ -1,0 +1,48 @@
+.class-subject {
+  margin: 5px 0 0 !important;
+
+  color:
+    #0071c7 !important;
+
+  font-size: 10px !important;
+
+  transition:
+    color 0.25s ease;
+}
+
+.class-card:hover .class-subject {
+  color:
+    #005fa8 !important;
+}
+.class-count:hover {
+  border-color:
+    rgba(0, 113, 199, 0.25);
+
+  background:
+    rgba(255, 255, 255, 0.34);
+
+  color:
+    #0071c7;
+
+  box-shadow:
+    0 7px 18px
+    rgba(0, 113, 199, 0.09);
+    background:
+    linear-gradient(
+      135deg,
+      #0088ea,
+      #0071c7
+    );
+}
+
+.class-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    rgba(0, 113, 199, 0.30);
+
+  box-shadow:
+    0 12px 28px
+    rgba(28, 55, 72, 0.14);
+}

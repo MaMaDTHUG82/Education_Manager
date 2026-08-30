@@ -34,7 +34,7 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-icon">E</div>
+        <div className="brand-icon"></div>
 
         <div>
           <h1>Education Manager</h1>
@@ -43,9 +43,7 @@ export default function Sidebar({
       </div>
 
       <nav className="navigation">
-        <div className="nav-section-title">
-          WORKSPACE
-        </div>
+        
 
         {navigationItems.map((item) => (
           <button
@@ -73,8 +71,8 @@ export default function Sidebar({
         </button>
 
         <div className="sidebar-version">
-          Education Manager
-          <span>v0.1.1</span>
+          Made By MaMaD_THUG
+          <span>v0.1.2</span>
         </div>
       </div>
     </aside>
