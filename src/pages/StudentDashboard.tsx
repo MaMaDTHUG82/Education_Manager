@@ -396,7 +396,7 @@ export default function StudentDashboard({
         className="back-button student-back-button"
         onClick={onBack}
       >
-        ← Back to {classInfo.name}
+         Back to {classInfo.name}
       </button>
 
       <header className="student-dashboard-header">

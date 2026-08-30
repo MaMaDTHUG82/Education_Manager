@@ -390,7 +390,7 @@ export default function ClassDashboard({
           className="back-button"
           onClick={onBack}
         >
-          ← Back to Classes
+           Back to Classes
         </button>
       </div>
 
