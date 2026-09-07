@@ -25,6 +25,11 @@ const navigationItems: {
     label: "Tasks",
     icon: "▤",
   },
+  {
+    id: "searchmenu",
+    label: "Search",
+    icon: "🔎",
+  },
 ];
 
 export default function Sidebar({

@@ -14,12 +14,15 @@ import Tasks from "./pages/Tasks" ;
 
 import Settings from "./pages/Settings";
 
+import Search from "./pages//Search" ; 
+
 
 export type Page =
   | "dashboard"
   | "classes"
   | "tasks"
-  | "settings";
+  | "settings"
+    "searchmenu";
 
 
 function App() {
@@ -44,6 +47,10 @@ function App() {
       case "dashboard":
       default:
         return <Dashboard />;
+
+      case "searchmenu":
+      default:
+        return <Search />;  
 
     }
 
