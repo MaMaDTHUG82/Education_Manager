@@ -14,7 +14,8 @@ import Tasks from "./pages/Tasks" ;
 
 import Settings from "./pages/Settings";
 
-import Search from "./pages//Search" ; 
+import Search from "./pages/Search";
+
 
 
 export type Page =
@@ -22,7 +23,7 @@ export type Page =
   | "classes"
   | "tasks"
   | "settings"
-    "searchmenu";
+  | "search";
 
 
 function App() {
@@ -32,29 +33,24 @@ function App() {
 
 
   const renderPage = () => {
+  switch (currentPage) {
+    case "classes":
+      return <Classes />;
 
-    switch (currentPage) {
+    case "tasks":
+      return <Tasks />;
 
-      case "classes":
-        return <Classes />;
+    case "search":
+      return <Search />;
 
-      case "tasks":
-        return <Tasks />;
+    case "settings":
+      return <Settings />;
 
-      case "settings":
-        return <Settings />;
-
-      case "dashboard":
-      default:
-        return <Dashboard />;
-
-      case "searchmenu":
-      default:
-        return <Search />;  
-
-    }
-
-  };
+    case "dashboard":
+    default:
+      return <Dashboard />;
+  }
+};
 
 
   return (

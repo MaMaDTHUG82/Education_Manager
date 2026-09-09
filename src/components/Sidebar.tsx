@@ -26,7 +26,7 @@ const navigationItems: {
     icon: "▤",
   },
   {
-    id: "searchmenu",
+    id: "search",
     label: "Search",
     icon: "🔎",
   },
@@ -77,7 +77,7 @@ export default function Sidebar({
 
         <div className="sidebar-version">
           Made By MaMaD_THUG
-          <span>v0.1.2</span>
+          <span>v0.1.3</span>
         </div>
       </div>
     </aside>
