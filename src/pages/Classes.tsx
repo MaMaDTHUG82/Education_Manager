@@ -83,20 +83,26 @@ export interface ClassItem {
 }
 
 
+interface ClassesProps {
+  initialClassId?: number | null;
+  initialStudentId?: number | null;
+}
 
-export default function Classes() {
+export default function Classes({
+  initialClassId = null,
+  initialStudentId = null,
+}: ClassesProps) {
   const {
-  classes,
-  setClasses,
-  addActivity,
-} = useApp();
+    classes,
+    setClasses,
+    addActivity,
+  } = useApp();
 
   const [selectedClassId, setSelectedClassId] =
-    useState<number | null>(null);
+    useState<number | null>(initialClassId);
 
   const [selectedStudentId, setSelectedStudentId] =
-    useState<number | null>(null);
-
+    useState<number | null>(initialStudentId);
   const [isModalOpen, setIsModalOpen] =
     useState(false);
 

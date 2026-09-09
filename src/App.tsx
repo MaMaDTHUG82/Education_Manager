@@ -26,22 +26,46 @@ export type Page =
   | "search";
 
 
-function App() {
 
+
+function App() {
   const [currentPage, setCurrentPage] =
     useState<Page>("dashboard");
 
+  const [openClassId, setOpenClassId] =
+    useState<number | null>(null);
+
+  const [openStudentId, setOpenStudentId] =
+    useState<number | null>(null);
 
   const renderPage = () => {
   switch (currentPage) {
     case "classes":
-      return <Classes />;
+      return (
+        <Classes
+          initialClassId={openClassId}
+          initialStudentId={openStudentId}
+        />
+      );
 
     case "tasks":
       return <Tasks />;
 
     case "search":
-      return <Search />;
+      return (
+        <Search
+          onOpenClass={(classId) => {
+            setOpenStudentId(null);
+            setOpenClassId(classId);
+            setCurrentPage("classes");
+          }}
+          onOpenStudent={(classId, studentId) => {
+            setOpenClassId(classId);
+            setOpenStudentId(studentId);
+            setCurrentPage("classes");
+          }}
+        />
+      );
 
     case "settings":
       return <Settings />;
